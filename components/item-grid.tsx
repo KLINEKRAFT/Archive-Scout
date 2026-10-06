@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { loadImage } from "./use-previews";
-import { Bookmark, ArrowUpRight } from "lucide-react";
+import { Bookmark, ArrowUpRight, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { firstWorkingPreview, previewCandidates } from "@/lib/preview";
 import { PROVIDERS, type ArchiveItem } from "@/lib/types";
@@ -79,7 +79,7 @@ export function ItemGrid({
           <div className="image-wrap">
             <button
               className="open-image"
-              aria-label={`View ${item.title}`}
+              aria-label={`${item.mediaType === "video" ? "Play" : "View"} ${item.title}`}
               onClick={() => onOpen(item)}
             >
               <ArchiveImage
@@ -98,6 +98,12 @@ export function ItemGrid({
                 fill={saved.has(item.id) ? "currentColor" : "none"}
               />
             </button>
+            {item.mediaType === "video" && (
+              <span className="video-badge">
+                <Play size={12} fill="currentColor" /> VIDEO{" "}
+                {item.duration || ""}
+              </span>
+            )}
             <span className="image-resolution">
               {item.width && item.height
                 ? `${item.width.toLocaleString()} × ${item.height.toLocaleString()}`

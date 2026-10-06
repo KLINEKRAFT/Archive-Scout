@@ -10,6 +10,12 @@ const cache = new TTLCache<Color[]>(1500, 86400000);
 const pending = new Map<string, Promise<Color[]>>();
 let active = 0;
 const hosts = [
+  "digitalcollections.tulsalibrary.org",
+  "digitalprairie.ok.gov",
+  "cdm16063.contentdm.oclc.org",
+  "cdm16807.contentdm.oclc.org",
+  "images-assets.nasa.gov",
+  "archive.org",
   "www.artic.edu",
   "openaccess-cdn.clevelandart.org",
   "images.metmuseum.org",

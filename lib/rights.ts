@@ -22,7 +22,7 @@ export function classifyRights(
   };
   // Restrictive terms take precedence over incidental mentions of open licenses.
   if (
-    /\bnon.?commercial\b|\bcc.by.nc\b|\/by-nc|all rights reserved|copyrighted|in copyright|permission required|not (?:in the )?public domain/.test(
+    /\bnon.?commercial\b|\bcc.by.nc\b|\/by-nc|all rights reserved|copyrighted|in copyright|permission required|not (?:in the )?public domain|rightsstatements\.org\/(?:page|vocab)\/inc(?:[-/])/.test(
       text,
     )
   )

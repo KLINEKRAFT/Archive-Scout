@@ -1,7 +1,12 @@
 import type { ArchiveItem } from "./types";
 
 export function previewKey(item: ArchiveItem) {
-  return JSON.stringify([item.id, item.thumbnailUrl, item.previewUrl]);
+  return JSON.stringify([
+    item.id,
+    item.thumbnailUrl,
+    item.previewUrl,
+    item.videoUrl,
+  ]);
 }
 
 export function previewCandidates(item: ArchiveItem, large = false): string[] {

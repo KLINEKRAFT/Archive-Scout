@@ -1,3 +1,6 @@
+import { tulsa, oklahoma } from "./contentdm";
+import { nasa } from "./nasa";
+import { internetArchive } from "./internet-archive";
 import { aic } from "./aic";
 import { cma } from "./cma";
 import { met } from "./met";
@@ -7,6 +10,10 @@ import { dpla } from "./dpla";
 import { smithsonian } from "./smithsonian";
 import type { ArchiveProvider, ProviderId } from "../types";
 export const providers: Record<ProviderId, ArchiveProvider> = {
+  tulsa,
+  oklahoma,
+  nasa,
+  internetarchive: internetArchive,
   aic,
   cma,
   met,

@@ -6,6 +6,10 @@ export const PROVIDERS = [
   { id: "aic", name: "Art Institute of Chicago", code: "AIC / 05" },
   { id: "cma", name: "Cleveland Museum of Art", code: "CMA / 06" },
   { id: "met", name: "The Metropolitan Museum of Art", code: "MET / 07" },
+  { id: "tulsa", name: "Tulsa City-County Library", code: "TUL / 08" },
+  { id: "oklahoma", name: "Oklahoma Digital Prairie", code: "OK / 09" },
+  { id: "internetarchive", name: "Internet Archive", code: "IA / 10" },
+  { id: "nasa", name: "NASA Image and Video Library", code: "NASA / 11" },
 ] as const;
 export type ProviderId = (typeof PROVIDERS)[number]["id"];
 export type RightsCategory =
@@ -55,6 +59,9 @@ export interface ArchiveItem extends Rights {
   medium?: string;
   subjects: string[];
   tags: string[];
+  mediaType?: "image" | "video";
+  videoUrl?: string;
+  duration?: string;
   thumbnailUrl: string;
   verifiedPreviewUrl?: string;
   previewUrl: string;
@@ -75,6 +82,7 @@ export interface ArchiveItem extends Rights {
 }
 export interface SearchQuery {
   textQuery: string;
+  mediaType: "all" | "image" | "video";
   yearStart?: number;
   yearEnd?: number;
   types: string[];
@@ -116,6 +124,7 @@ export interface SavedPalette {
 }
 export const MATERIALS = [
   "Photography",
+  "Film / Video",
   "Illustration",
   "Advertisement",
   "Poster",
