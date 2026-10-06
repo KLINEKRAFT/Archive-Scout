@@ -33,6 +33,7 @@ import {
 } from "@/lib/query";
 import { filterAndRank, deduplicate, similarityService } from "@/lib/search";
 import { localResearchStorage } from "@/lib/storage";
+import { usePreviews } from "./use-previews";
 import { ItemGrid } from "./item-grid";
 import { Filters } from "./filters";
 import { Detail } from "./detail";
@@ -301,17 +302,35 @@ export function Scout() {
         if (record)
           setSelected((prev) =>
             prev?.id === record.id
-              ? { ...record, dominantColors: prev.dominantColors }
+              ? {
+                  ...record,
+                  dominantColors: prev.dominantColors,
+                  verifiedPreviewUrl: prev.verifiedPreviewUrl,
+                }
               : prev,
           );
       })
       .catch(() => {});
     return () => controller.abort();
   }, [selected?.id]);
-  const visible = useMemo(
-    () => (isHome ? items.slice(0, 12) : filterAndRank(items, query)),
-    [items, query, isHome],
+  const [failedPreviews, setFailedPreviews] = useState<Set<string>>(new Set());
+  const omitUnavailable = useCallback((item: ArchiveItem) => {
+    setFailedPreviews((prev) => new Set([...prev, item.id]));
+    setSelected((prev) => (prev?.id === item.id ? null : prev));
+  }, []);
+  const candidates = useMemo(
+    () =>
+      (view === "collections"
+        ? boards.find((b) => b.id === activeBoard)?.items || []
+        : isHome
+          ? items
+          : filterAndRank(items, query)
+      ).filter((item) => !failedPreviews.has(item.id)),
+    [items, query, isHome, view, boards, activeBoard, failedPreviews],
   );
+  const previews = usePreviews(candidates);
+  const visible = isHome ? previews.items.slice(0, 12) : previews.items;
+  const checkingImages = loading || previews.pending;
   const saved = useMemo(
     () => new Set(boards.flatMap((b) => b.items.map((i) => i.id))),
     [boards],
@@ -569,6 +588,7 @@ export function Scout() {
               </div>
               {visible.length ? (
                 <ItemGrid
+                  onUnavailable={omitUnavailable}
                   items={visible.slice(0, 8)}
                   layout="masonry"
                   onOpen={(i) => {
@@ -580,7 +600,7 @@ export function Scout() {
                   }}
                   saved={saved}
                 />
-              ) : loading ? (
+              ) : checkingImages ? (
                 <div
                   className="skeleton-grid"
                   aria-label="Loading archive images"
@@ -706,7 +726,7 @@ export function Scout() {
                     view{" "}
                     <span>
                       ·{" "}
-                      {loading
+                      {checkingImages
                         ? `${good} archives returned`
                         : `${good} of ${query.providers.length} archives searched`}
                     </span>
@@ -801,6 +821,7 @@ export function Scout() {
                 )}
                 {visible.length ? (
                   <ItemGrid
+                    onUnavailable={omitUnavailable}
                     items={visible}
                     layout={layout}
                     onOpen={setSelected}
@@ -811,7 +832,7 @@ export function Scout() {
                     saved={saved}
                     showColors={query.selectedColors.length > 0}
                   />
-                ) : loading ? (
+                ) : checkingImages ? (
                   <div
                     className="skeleton-grid"
                     aria-label="Searching the archives"
@@ -865,6 +886,10 @@ export function Scout() {
                   {loading ? (
                     <span className="eyebrow">
                       Opening the archive drawers…
+                    </span>
+                  ) : previews.pending ? (
+                    <span className="eyebrow" role="status">
+                      Checking image previews…
                     </span>
                   ) : Object.values(statuses).some((s) => s.hasMore) ? (
                     <button
@@ -931,7 +956,8 @@ export function Scout() {
                   </button>
                 )}
                 <ItemGrid
-                  items={board.items}
+                  onUnavailable={omitUnavailable}
+                  items={visible}
                   layout={layout}
                   onOpen={setSelected}
                   onSave={(i) => {
@@ -1106,6 +1132,7 @@ export function Scout() {
       {selectedCurrent && (
         <Detail
           item={selectedCurrent}
+          onUnavailable={omitUnavailable}
           onClose={() => setSelected(null)}
           onSave={() => {
             setName("");
@@ -1123,7 +1150,7 @@ export function Scout() {
             notify("Related search uses metadata and detected colors.");
           }}
           onMove={(d) => {
-            const list = board?.items || visible;
+            const list = visible;
             const idx = list.findIndex((i) => i.id === selectedCurrent.id);
             if (list.length)
               setSelected(list[(idx + d + list.length) % list.length]);

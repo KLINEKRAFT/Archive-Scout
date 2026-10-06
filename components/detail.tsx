@@ -20,6 +20,7 @@ export function Detail({
   onSimilar,
   onMove,
   notify,
+  onUnavailable,
 }: {
   item: ArchiveItem;
   onClose: () => void;
@@ -28,6 +29,7 @@ export function Detail({
   onSimilar: () => void;
   onMove: (delta: number) => void;
   notify: (s: string) => void;
+  onUnavailable: (item: ArchiveItem) => void;
 }) {
   const [downloads, setDownloads] = useState(false);
   useEffect(() => {
@@ -82,7 +84,12 @@ export function Detail({
             </button>
           </div>
         </div>
-        <ArchiveImage key={item.id} item={item} large />
+        <ArchiveImage
+          key={item.id}
+          item={item}
+          large
+          onUnavailable={onUnavailable}
+        />
         <span className="detail-caption">
           {item.title} · {item.dateDisplay}
         </span>
