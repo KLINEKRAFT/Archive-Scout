@@ -10,6 +10,8 @@ export const PROVIDERS = [
   { id: "oklahoma", name: "Oklahoma Digital Prairie", code: "OK / 09" },
   { id: "internetarchive", name: "Internet Archive", code: "IA / 10" },
   { id: "nasa", name: "NASA Image and Video Library", code: "NASA / 11" },
+  { id: "europeana", name: "Europeana", code: "EU / 12" },
+  { id: "digitalnz", name: "DigitalNZ", code: "NZ / 13" },
 ] as const;
 export type ProviderId = (typeof PROVIDERS)[number]["id"];
 export type RightsCategory =

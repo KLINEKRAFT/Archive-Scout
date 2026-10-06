@@ -10,7 +10,7 @@ import { classifyRights } from "../lib/rights";
 import { previewKey } from "../lib/preview";
 
 test("media filters and seven-source subsets survive URL round trips after expansion", () => {
-  assert.equal(PROVIDERS.length, 11);
+  assert.equal(PROVIDERS.length, 13);
   const query = {
     ...defaultQuery,
     mediaType: "video" as const,

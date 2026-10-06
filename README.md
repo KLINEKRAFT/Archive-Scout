@@ -12,7 +12,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open http://127.0.0.1:3000. Nine providers work without credentials. Add `DPLA_API_KEY` and `SMITHSONIAN_API_KEY` to `.env.local` to enable those two sources. Keys are used only in server route handlers and never returned to the browser. Restart the server after changing keys.
+Open http://127.0.0.1:3000. Ten providers work without credentials. Add `DPLA_API_KEY`, `SMITHSONIAN_API_KEY`, and `EUROPEANA_API_KEY` to `.env.local` to enable the three key-required sources. `DIGITALNZ_API_KEY` is optional but recommended for identified API access. Keys are used only in server route handlers and never returned to the browser. Restart the server after changing keys.
 
 ```sh
 npm test
@@ -26,7 +26,7 @@ npm start
 ## V1 experience
 
 - Editorial discovery page, predefined subject/era searches, and palette entry points.
-- Eleven interchangeable adapters. Searches run concurrently in the browser against server endpoints and merge as each source responds. New searches cancel superseded requests.
+- Thirteen interchangeable adapters. Searches run concurrently in the browser against server endpoints and merge as each source responds. New searches cancel superseded requests.
 - Shareable URL state for media type, era, sources, material, rights, orientation, verified image size, palette, matching strength, and sort.
 - Image/video/all discovery, video badges, native controls, playable-file links, and browser metadata checks before video admission. No autoplay.
 - Masonry and uniform image grids, native lazy loading, detail dialog, keyboard `/`, Escape, and previous/next arrows.
@@ -98,3 +98,15 @@ Deploy as a Node-compatible Next.js app (not a static export). Configure server 
 Collections live only in the current browser. Clearing site storage removes them; they do not sync between devices. A future account store can implement `ResearchStorage` without changing archive adapters.
 
 Fonts use DM Sans and IBM Plex Mono from Google Fonts with system fallbacks. No external font service is required for the app to remain usable.
+
+## Europeana and DigitalNZ
+
+Set `EUROPEANA_API_KEY` and `DIGITALNZ_API_KEY` in Vercel Production and Preview, then deploy this code. Europeana receives its key through `X-Api-Key`; DigitalNZ uses `Authentication-Token`. The keys remain server-side. Authenticated requests do not follow redirects, and API errors never include request credentials.
+
+Europeana provides cross-institution European images and qualifying video records. DigitalNZ aggregates New Zealand collections, including cinema advertising slides. Both retain contributor attribution, source links and item-level rights. DigitalNZ's `is_commercial_use` is a metadata permission and is never used to label media commercially reusable.
+
+Videos require a direct MP4/WebM, a known date ending by 1980, a working poster and successful browser video-metadata loading. External player pages are not treated as videos. Missing images and Europeana records marked `previewNoDistribute` are omitted. Dates are catalog metadata; no year is inferred from upload time or a title. Many film records therefore remain excluded.
+
+Only verified thumbnail hosts are added to the palette/proxy allowlist. Other institutions' images can still load directly in the browser, but palette analysis may be unavailable. Global results use the existing preview verification before appearing in the grid.
+
+Official docs: [Europeana authentication](https://europeana.atlassian.net/wiki/spaces/EF/pages/2462351393/Accessing+the+APIs), [Europeana search](https://europeana.atlassian.net/wiki/spaces/EF/pages/2385739812/Search), [DigitalNZ API](https://digitalnz.org/developers/api-docs-v3). V&A and Gallica remain researched candidates; they are not enabled by these environment variables.
