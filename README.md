@@ -12,7 +12,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open http://127.0.0.1:3000. Ten providers work without credentials. Add `DPLA_API_KEY`, `SMITHSONIAN_API_KEY`, and `EUROPEANA_API_KEY` to `.env.local` to enable the three key-required sources. `DIGITALNZ_API_KEY` is optional but recommended for identified API access. Keys are used only in server route handlers and never returned to the browser. Restart the server after changing keys.
+Open http://127.0.0.1:3000. Twelve providers work without credentials. Add `DPLA_API_KEY`, `SMITHSONIAN_API_KEY`, and `EUROPEANA_API_KEY` to `.env.local` to enable the three key-required sources. `DIGITALNZ_API_KEY` is optional but recommended for identified API access. Keys are used only in server route handlers and never returned to the browser. Restart the server after changing keys.
 
 ```sh
 npm test
@@ -26,8 +26,8 @@ npm start
 ## V1 experience
 
 - Editorial discovery page, predefined subject/era searches, and palette entry points.
-- Thirteen interchangeable adapters. Searches run concurrently in the browser against server endpoints and merge as each source responds. New searches cancel superseded requests.
-- Shareable URL state for media type, era, sources, material, rights, orientation, verified image size, palette, matching strength, and sort.
+- Fifteen interchangeable adapters. Searches run concurrently in the browser against server endpoints and merge as each source responds. New searches cancel superseded requests.
+- Shareable URL state for media type, era, archive country, sources, material, rights, orientation, verified image size, palette, matching strength, and sort.
 - Image/video/all discovery, video badges, native controls, playable-file links, and browser metadata checks before video admission. No autoplay.
 - Masonry and uniform image grids, native lazy loading, detail dialog, keyboard `/`, Escape, and previous/next arrows.
 - Source-linked file choices with archive-supplied dimensions and sizes. Original files go directly to their institutions without re-encoding. A bounded preview fallback handles failed browser embeds.
@@ -109,4 +109,12 @@ Videos require a direct MP4/WebM, a known date ending by 1980, a working poster 
 
 Only verified thumbnail hosts are added to the palette/proxy allowlist. Other institutions' images can still load directly in the browser, but palette analysis may be unavailable. Global results use the existing preview verification before appearing in the grid.
 
-Official docs: [Europeana authentication](https://europeana.atlassian.net/wiki/spaces/EF/pages/2462351393/Accessing+the+APIs), [Europeana search](https://europeana.atlassian.net/wiki/spaces/EF/pages/2385739812/Search), [DigitalNZ API](https://digitalnz.org/developers/api-docs-v3). V&A and Gallica remain researched candidates; they are not enabled by these environment variables.
+Official docs: [Europeana authentication](https://europeana.atlassian.net/wiki/spaces/EF/pages/2462351393/Accessing+the+APIs), [Europeana search](https://europeana.atlassian.net/wiki/spaces/EF/pages/2385739812/Search), [DigitalNZ API](https://digitalnz.org/developers/api-docs-v3). V&A and Gallica are also enabled without API keys. V&A uses collections search/detail JSON and IIIF; Gallica uses SRU Dublin Core and documented thumbnail/medium derivatives.
+
+## Unique results and archive countries
+
+Results are filtered, then browser-verified, then grouped by provider record IDs, shared canonical record/image URLs, IIIF derivatives, and exact normalized preview pixels when CORS permits. Alias groups merge transitively across providers and loaded pages; saved boards retain those aliases. A broken copy cannot suppress a working alternative. Films never merge merely because they share a poster, and titles alone never merge distinct works.
+
+This does not guarantee identification of every independently scanned, cropped, or recompressed copy. Unrelated URLs without readable pixels may remain unmatched. Country means the supplying archive's location/coverage, not where an object was made or photographed. Unknown countries are excluded by an active country filter. Europeana's country metadata and query facets are used where available.
+
+V&A date bounds may span a century; those broad ranges remain visible as catalogued rather than being relabeled with the selected decade. Gallica keeps original work rights separate from digitization reuse terms. Neither source grants blanket commercial reuse permission.

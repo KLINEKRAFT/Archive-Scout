@@ -1,7 +1,9 @@
+import { countryCodes } from "./countries";
 import { PROVIDERS, type SearchQuery, type ProviderId } from "./types";
 export const defaultQuery: SearchQuery = {
   textQuery: "",
   mediaType: "all",
+  countries: [],
   types: [],
   rights: [],
   providers: PROVIDERS.map((p) => p.id),
@@ -29,6 +31,7 @@ export function parseQuery(p: URLSearchParams): SearchQuery {
         : p.get("media") === "image"
           ? "image"
           : "all",
+    countries: countryCodes(p.getAll("country")),
     types: p.getAll("type"),
     rights: p.getAll("rights"),
     providers: p.has("sources")
@@ -58,6 +61,7 @@ export function serializeQuery(q: SearchQuery): string {
   if (q.textQuery) p.set("q", q.textQuery);
   if (q.yearStart !== undefined) p.set("from", String(q.yearStart));
   if (q.yearEnd !== undefined) p.set("to", String(q.yearEnd));
+  q.countries.forEach((c) => p.append("country", c));
   q.types.forEach((t) => p.append("type", t));
   q.rights.forEach((r) => p.append("rights", r));
   if (q.providers.length !== PROVIDERS.length)

@@ -1,4 +1,5 @@
 "use client";
+import { COUNTRIES } from "@/lib/countries";
 import { useState } from "react";
 import { Pipette, Plus, RotateCcw } from "lucide-react";
 import {
@@ -66,6 +67,7 @@ export function Filters({
               yearStart: undefined,
               yearEnd: undefined,
               mediaType: "all",
+              countries: [],
               types: [],
               rights: [],
               selectedColors: [],
@@ -101,6 +103,28 @@ export function Filters({
           Videos: 1980 and earlier. Undated videos are excluded.
         </p>
       </fieldset>
+      <details open>
+        <summary>
+          Archive country <span>{q.countries.length || "All"}</span>
+        </summary>
+        <label className="country-hint" htmlFor="archive-country">
+          Location of the archive, not the subject pictured.
+        </label>
+        <select
+          id="archive-country"
+          value={q.countries[0] || ""}
+          onChange={(e) =>
+            set({ ...q, countries: e.target.value ? [e.target.value] : [] })
+          }
+        >
+          <option value="">All countries</option>
+          {COUNTRIES.map(([code, name]) => (
+            <option key={code} value={code}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </details>
       <details open>
         <summary>
           Era{" "}

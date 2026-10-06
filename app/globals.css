@@ -2353,3 +2353,19 @@ a svg {
 .source-band > div {
   flex-wrap: wrap;
 }
+
+.country-hint {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+#archive-country {
+  width: 100%;
+  padding: 9px 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+}

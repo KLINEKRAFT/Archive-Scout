@@ -12,6 +12,12 @@ export const PROVIDERS = [
   { id: "nasa", name: "NASA Image and Video Library", code: "NASA / 11" },
   { id: "europeana", name: "Europeana", code: "EU / 12" },
   { id: "digitalnz", name: "DigitalNZ", code: "NZ / 13" },
+  { id: "vam", name: "Victoria and Albert Museum", code: "VA / 14" },
+  {
+    id: "gallica",
+    name: "Gallica · Bibliothèque nationale de France",
+    code: "BNF / 15",
+  },
 ] as const;
 export type ProviderId = (typeof PROVIDERS)[number]["id"];
 export type RightsCategory =
@@ -71,6 +77,9 @@ export interface ArchiveItem extends Rights {
   width?: number;
   height?: number;
   aspectRatio?: number;
+  archiveCountries?: string[];
+  identityKeys?: string[];
+  visualFingerprint?: string;
   sourceUrl: string;
   institution: string;
   collection?: string;
@@ -87,6 +96,7 @@ export interface SearchQuery {
   mediaType: "all" | "image" | "video";
   yearStart?: number;
   yearEnd?: number;
+  countries: string[];
   types: string[];
   rights: string[];
   providers: ProviderId[];

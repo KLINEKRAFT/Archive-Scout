@@ -1,3 +1,5 @@
+import { vam } from "./vam";
+import { gallica } from "./gallica";
 import { europeana } from "./europeana";
 import { digitalnz } from "./digitalnz";
 import { tulsa, oklahoma } from "./contentdm";
@@ -12,6 +14,8 @@ import { dpla } from "./dpla";
 import { smithsonian } from "./smithsonian";
 import type { ArchiveProvider, ProviderId } from "../types";
 export const providers: Record<ProviderId, ArchiveProvider> = {
+  vam,
+  gallica,
   europeana,
   digitalnz,
   tulsa,
