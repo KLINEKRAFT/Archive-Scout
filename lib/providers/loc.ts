@@ -1,3 +1,9 @@
+import { archiveCollection } from "../collections";
+import {
+  allowsHistoricalVideo,
+  videoYears,
+  VIDEO_YEAR_LIMIT,
+} from "../video-policy";
 import type { ArchiveProvider } from "../types";
 import { item, material, list, years, num } from "../normalize";
 import { classifyRights } from "../rights";
@@ -20,6 +26,13 @@ export const loc: ArchiveProvider = {
       (u) => !u.includes("/static/images/"),
     );
     const resources = raw.resources || r.resources || [];
+    const video = list(r.original_format || r.type).some((v) =>
+      /film|video/i.test(v),
+    );
+    const movie = resources.find((res: any) =>
+      /^https?:.*\.mp4(?:\?|$)/i.test(res.video || ""),
+    );
+    const videoUrl = movie?.video?.replace(/^http:/, "https:");
     const files = resources
       .flatMap((res: any) => res.files || [])
       .flat()
@@ -40,10 +53,15 @@ export const loc: ArchiveProvider = {
       creator: list(r.contributors || r.contributor).join("; "),
       contributors: list(r.contributors),
       dateDisplay: r.date || "Date unknown",
-      ...years(r.date),
-      objectType: material(
-        list(r.genre || r.original_format || r.type).join(" "),
-      ),
+      ...(video ? videoYears(r.date) : years(r.date)),
+      mediaType: video ? "video" : "image",
+      videoUrl,
+      duration: movie?.duration
+        ? `${Math.floor(movie.duration / 60)}:${String(movie.duration % 60).padStart(2, "0")}`
+        : undefined,
+      objectType: video
+        ? "Film / Video"
+        : material(list(r.genre || r.original_format || r.type).join(" ")),
       subjects: list(r.subject),
       collection: list(r.partof).join("; "),
       thumbnailUrl:
@@ -61,39 +79,64 @@ export const loc: ArchiveProvider = {
         undefined,
         "Library of Congress item rights / rights_advisory. “No known restrictions” is not treated as a public-domain declaration.",
       ),
-      downloadOptions: files.length
-        ? files
-            .map((f: any) => ({
-              label: `Archive file${f.mimetype ? " · " + f.mimetype : ""}`,
-              url: f.url,
-              width: num(f.width),
-              height: num(f.height),
-            }))
-            .slice(0, 8)
-        : [
-            r.service_high
-              ? { label: "Large archive derivative", url: r.service_high }
-              : null,
-            r.service_medium
-              ? { label: "Web archive derivative", url: r.service_medium }
-              : null,
-            ...(images.length
-              ? [{ label: "Available thumbnail", url: images.at(-1)! }]
-              : []),
-          ].filter((x): x is { label: string; url: string } => !!x),
+      downloadOptions: video
+        ? videoUrl
+          ? [{ label: "MP4 archive film", url: videoUrl }]
+          : []
+        : files.length
+          ? files
+              .map((f: any) => ({
+                label: `Archive file${f.mimetype ? " · " + f.mimetype : ""}`,
+                url: f.url,
+                width: num(f.width),
+                height: num(f.height),
+              }))
+              .slice(0, 8)
+          : [
+              r.service_high
+                ? { label: "Large archive derivative", url: r.service_high }
+                : null,
+              r.service_medium
+                ? { label: "Web archive derivative", url: r.service_medium }
+                : null,
+              ...(images.length
+                ? [{ label: "Available thumbnail", url: images.at(-1)! }]
+                : []),
+            ].filter((x): x is { label: string; url: string } => !!x),
     });
   },
   async search(q, signal) {
+    if (q.mediaType === "video" && (q.yearStart ?? 0) > VIDEO_YEAR_LIMIT)
+      return {
+        provider: "loc",
+        items: [],
+        total: 0,
+        hasMore: false,
+        status: "ok",
+      };
+    const collection = archiveCollection(q.collection);
+    const path =
+      collection?.locPath ||
+      (q.mediaType === "video"
+        ? "film-and-videos"
+        : q.mediaType === "all"
+          ? "search"
+          : "photos");
     const r = await json(
-      `https://www.loc.gov/photos/?${params({ q: providerText(q), fo: "json", c: 24, sp: q.page, dates: q.yearStart !== undefined || q.yearEnd !== undefined ? `${q.yearStart ?? 1000}/${q.yearEnd ?? new Date().getFullYear()}` : undefined })}`,
+      `https://www.loc.gov/${path}/?${params({ q: q.collection && !q.textQuery ? undefined : providerText(q), fo: "json", c: 24, sp: q.page, dates: q.yearStart !== undefined || q.yearEnd !== undefined || q.mediaType === "video" ? `${q.yearStart ?? 1800}/${q.mediaType === "video" ? Math.min(q.yearEnd ?? VIDEO_YEAR_LIMIT, VIDEO_YEAR_LIMIT) : (q.yearEnd ?? new Date().getFullYear())}` : undefined })}`,
       signal,
     );
     return {
       provider: "loc",
-      items: (r.results || [])
+      items: (r.results || r.content?.results || [])
         .map(loc.normalizeItem)
-        .filter((r: any) => r.thumbnailUrl),
-      total: r.pagination?.total || 0,
+        .filter(
+          (i: any) =>
+            i.thumbnailUrl &&
+            allowsHistoricalVideo(i) &&
+            (i.mediaType !== "video" || i.videoUrl),
+        ),
+      total: r.pagination?.of || 0,
       hasMore: !!r.pagination?.next,
       status: "ok",
     };

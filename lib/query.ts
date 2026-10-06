@@ -1,6 +1,8 @@
+import { archiveCollection } from "./collections";
 import { countryCodes } from "./countries";
 import { PROVIDERS, type SearchQuery, type ProviderId } from "./types";
 export const defaultQuery: SearchQuery = {
+  collection: "",
   textQuery: "",
   mediaType: "all",
   countries: [],
@@ -22,6 +24,7 @@ export function parseQuery(p: URLSearchParams): SearchQuery {
       : undefined;
   return {
     ...defaultQuery,
+    collection: archiveCollection(p.get("collection") || "")?.id || "",
     textQuery: (p.get("q") ?? "").slice(0, 200),
     yearStart: number("from"),
     yearEnd: number("to"),
@@ -52,11 +55,15 @@ export function parseQuery(p: URLSearchParams): SearchQuery {
       ? (p.get("match") as "loose" | "strict")
       : "balanced",
     sort: p.get("sort") ?? "relevance",
-    page: Math.min(100, Math.max(1, number("page") ?? 1)),
+    page: Math.max(
+      1,
+      Math.min(Number.MAX_SAFE_INTEGER, Math.floor(number("page") ?? 1)),
+    ),
   };
 }
 export function serializeQuery(q: SearchQuery): string {
   const p = new URLSearchParams();
+  if (q.collection) p.set("collection", q.collection);
   if (q.mediaType !== "all") p.set("media", q.mediaType);
   if (q.textQuery) p.set("q", q.textQuery);
   if (q.yearStart !== undefined) p.set("from", String(q.yearStart));

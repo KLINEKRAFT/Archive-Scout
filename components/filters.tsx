@@ -1,4 +1,5 @@
 "use client";
+import { ARCHIVE_COLLECTIONS, collectionQuery } from "@/lib/collections";
 import { COUNTRIES } from "@/lib/countries";
 import { useState } from "react";
 import { Pipette, Plus, RotateCcw } from "lucide-react";
@@ -67,6 +68,7 @@ export function Filters({
               yearStart: undefined,
               yearEnd: undefined,
               mediaType: "all",
+              collection: "",
               countries: [],
               types: [],
               rights: [],
@@ -103,6 +105,24 @@ export function Filters({
           Videos: 1980 and earlier. Undated videos are excluded.
         </p>
       </fieldset>
+      <details open>
+        <summary>
+          Collection <span>{q.collection ? "1" : "All"}</span>
+        </summary>
+        <select
+          aria-label="Archive collection"
+          className="collection-select"
+          value={q.collection}
+          onChange={(e) => set({ ...q, ...collectionQuery(e.target.value) })}
+        >
+          <option value="">All collections</option>
+          {ARCHIVE_COLLECTIONS.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </select>
+      </details>
       <details open>
         <summary>
           Archive country <span>{q.countries.length || "All"}</span>

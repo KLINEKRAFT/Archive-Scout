@@ -1,4 +1,12 @@
 "use client";
+import { admitPage } from "@/lib/pagination";
+import { InfiniteResults } from "./infinite-results";
+import { DISCOVERY_SEARCHES, discoveryMix } from "@/lib/discovery";
+import {
+  ARCHIVE_COLLECTIONS,
+  collectionQuery,
+  archiveCollection,
+} from "@/lib/collections";
 import { uniqueRecords } from "@/lib/duplicates";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -80,6 +88,8 @@ export function Scout() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [retry, setRetry] = useState(0);
+  const discoverySeed = useRef(0);
+  const seenPages = useRef<Record<string, Set<string>>>({});
   const [layout, setLayout] = useState<"masonry" | "uniform">("masonry");
   const [dark, setDark] = useState(false);
   const [mobileFilters, setMobileFilters] = useState(false);
@@ -110,6 +120,7 @@ export function Scout() {
     try {
       setDark(localStorage.getItem("archive-scout:theme") === "dark");
     } catch {}
+    discoverySeed.current = Math.floor(Math.random() * 2147483647);
     setReady(true);
     const pop = () => {
       const q = parseQuery(new URLSearchParams(location.search));
@@ -162,6 +173,7 @@ export function Scout() {
   const sourceKey = query.providers.join(",");
   const countryKey = query.countries.join(",");
   const textKey = query.textQuery;
+  const collectionKey = query.collection;
   const mediaKey = query.mediaType;
   const from = query.yearStart;
   const to = query.yearEnd;
@@ -174,16 +186,33 @@ export function Scout() {
     if (page === 1) {
       setItems([]);
       setStatuses({});
+      seenPages.current = {};
     }
     const timeout = setTimeout(() => {
-      const ids = isHome ? (["aic", "cma"] as const) : query.providers;
+      const ids = isHome
+        ? DISCOVERY_SEARCHES.map((s) => s.provider)
+        : query.providers.filter((id) => page === 1 || statuses[id]?.hasMore);
       const q = isHome
-        ? { ...defaultQuery, textQuery: "travel poster" }
+        ? {
+            ...defaultQuery,
+            mediaType: "image" as const,
+            yearStart: 1800,
+            yearEnd: 1980,
+          }
         : query;
       Promise.allSettled(
         ids.map(async (id) => {
           try {
-            const p = serializeQuery(q);
+            const p = serializeQuery(
+              isHome
+                ? {
+                    ...q,
+                    textQuery: DISCOVERY_SEARCHES.find(
+                      (s) => s.provider === id,
+                    )!.text,
+                  }
+                : q,
+            );
             const response = await fetch(
               `/api/search?${p}&provider=${id}&page=${page}`,
               { signal: controller.signal },
@@ -191,7 +220,9 @@ export function Scout() {
             if (!response.ok) throw new Error();
             const r: ProviderResult = await response.json();
             if (!alive) return;
-            setStatuses((s) => ({ ...s, [id]: r }));
+            const seen = (seenPages.current[id] ||= new Set<string>());
+            const admitted = admitPage(r, seen, page);
+            setStatuses((s) => ({ ...s, [id]: admitted }));
             setItems((prev) =>
               uniqueRecords([
                 ...prev,
@@ -232,6 +263,7 @@ export function Scout() {
     isHome,
     view === "collections",
     textKey,
+    collectionKey,
     mediaKey,
     sourceKey,
     countryKey,
@@ -345,7 +377,13 @@ export function Scout() {
     [items, query, isHome, view, boards, activeBoard, failedPreviews],
   );
   const previews = usePreviews(candidates);
-  const visible = isHome ? previews.items.slice(0, 12) : previews.items;
+  const visible = isHome
+    ? discoveryMix(previews.items, discoverySeed.current).slice(0, 12)
+    : previews.items;
+  const nextPage = useCallback(() => {
+    setLoading(true);
+    setPage((p) => p + 1);
+  }, []);
   const checkingImages = loading || previews.pending;
   const saved = useMemo(
     () => new Set(boards.flatMap((b) => b.items.map((i) => i.id))),
@@ -507,15 +545,6 @@ export function Scout() {
         {view === "home" ? (
           <>
             <section className="hero">
-              <div className="hero-topline">
-                <span className="eyebrow red">
-                  <span className="little-cross">+</span> A field guide for the
-                  visually curious
-                </span>
-                <span className="eyebrow edition">
-                  Independent research / Vol. 001
-                </span>
-              </div>
               <div className="hero-heading">
                 <h1>
                   Search the
@@ -523,17 +552,6 @@ export function Scout() {
                   <span>visual past.</span>
                   <span className="hero-asterisk">✳</span>
                 </h1>
-                <p>
-                  Extraordinary images.
-                  <br />
-                  Hidden in plain sight.
-                  <br />
-                  <span>
-                    Explore the world’s public archives,
-                    <br />
-                    one discovery at a time.
-                  </span>
-                </p>
               </div>
               <form
                 className="hero-search"
@@ -587,26 +605,6 @@ export function Scout() {
                 ))}
               </div>
             </section>
-            <section className="source-band">
-              <span className="eyebrow">
-                Many archives.
-                <br />
-                One point of view.
-              </span>
-              <div>
-                {PROVIDERS.map((p) => (
-                  <span key={p.id} title={p.name}>
-                    {p.code.split(" / ")[0]}
-                    <sup>{p.code.split(" / ")[1]}</sup>
-                  </span>
-                ))}
-              </div>
-              <span className="band-note">
-                Original sources.
-                <br />
-                Rights kept in view.
-              </span>
-            </section>
             <section className="home-discovery">
               <div className="section-heading">
                 <div>
@@ -614,14 +612,19 @@ export function Scout() {
                   <h2>A little serendipity.</h2>
                 </div>
                 <p>
-                  Posters, printed matter, places to go.
+                  People, places, unexpected details.
                   <br />A starting point for your next idea.
                 </p>
                 <button
                   className="text-button"
-                  onClick={() => search("travel poster")}
+                  onClick={() => {
+                    discoverySeed.current = Math.floor(
+                      Math.random() * 2147483647,
+                    );
+                    setRetry((n) => n + 1);
+                  }}
                 >
-                  Explore the archives <ArrowRight size={16} />
+                  Shuffle discoveries <ArrowRight size={16} />
                 </button>
               </div>
               {visible.length ? (
@@ -650,14 +653,59 @@ export function Scout() {
               ) : (
                 <div className="quiet-empty">
                   The archive drawer is taking a moment.{" "}
-                  <button onClick={() => setRetry((n) => n + 1)}>
+                  <button
+                    onClick={() => {
+                      setPage(1);
+                      setRetry((n) => n + 1);
+                    }}
+                  >
                     Try again ↗
                   </button>
                 </div>
               )}
               <div className="home-caption">
-                <span className="eyebrow">Live selections / AIC + CMA</span>
+                <span className="eyebrow">
+                  Live photographs / mixed archives
+                </span>
                 <span>Every image leads back to its source.</span>
+              </div>
+            </section>
+            <section className="historical-collections">
+              <div className="section-heading">
+                <div>
+                  <span className="eyebrow red">Browse a collection</span>
+                  <h2>Print, history &amp; film.</h2>
+                </div>
+                <p>1800–1980 · Original sources and working previews.</p>
+              </div>
+              <div className="collection-shortcuts">
+                {ARCHIVE_COLLECTIONS.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => search(c.query, collectionQuery(c.id))}
+                  >
+                    <strong>
+                      {c.title}
+                      <ArrowUpRight size={16} />
+                    </strong>
+                    <span>{c.description}</span>
+                  </button>
+                ))}
+                <a
+                  href="https://www.nfsa.gov.au/collection/curated/general-motors-holden"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Holden car ads, Australia, 1955–1976. Watch on NFSA (opens in a new tab)"
+                >
+                  <strong>
+                    Holden car ads
+                    <ArrowUpRight size={16} />
+                  </strong>
+                  <span>Australia’s NFSA · 1955–1976</span>
+                  <span className="external-collection-note">
+                    Watch on NFSA · opens in a new tab
+                  </span>
+                </a>
               </div>
             </section>
             <section className="palette-editorial">
@@ -746,7 +794,9 @@ export function Scout() {
                         : "Subject index"}
                     </span>
                     <h1>
-                      {query.textQuery || "A study in color"}
+                      {archiveCollection(query.collection)?.title ||
+                        query.textQuery ||
+                        "A study in color"}
                       <span>.</span>
                     </h1>
                   </div>
@@ -757,6 +807,40 @@ export function Scout() {
                     <SlidersHorizontal size={15} />
                     Filters
                   </button>
+                </div>
+                <div className="search-activity" data-active={checkingImages}>
+                  <div
+                    className="search-activity-label"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {checkingImages && (
+                      <>
+                        <span
+                          className="search-activity-spinner"
+                          aria-hidden="true"
+                        />
+                        <span>
+                          {loading
+                            ? page > 1
+                              ? "Finding more images…"
+                              : "Searching the archives…"
+                            : "Checking image previews…"}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  {checkingImages && (
+                    <span className="search-activity-count" aria-hidden="true">
+                      {visible.length
+                        ? `${visible.length.toLocaleString()} ready`
+                        : "Discoveries on their way"}
+                    </span>
+                  )}
+                  <span className="search-activity-track" aria-hidden="true">
+                    <span />
+                  </span>
                 </div>
                 <div className="results-controls">
                   <div className="results-count" aria-live="polite">
@@ -856,7 +940,10 @@ export function Scout() {
                       ))}
                     <button
                       className="text-button"
-                      onClick={() => setRetry((n) => n + 1)}
+                      onClick={() => {
+                        setPage(1);
+                        setRetry((n) => n + 1);
+                      }}
                     >
                       Retry search ↗
                     </button>
@@ -925,30 +1012,13 @@ export function Scout() {
                     </div>
                   </div>
                 )}
-                <div className="load-more">
-                  {loading ? (
-                    <span className="eyebrow">
-                      Opening the archive drawers…
-                    </span>
-                  ) : previews.pending ? (
-                    <span className="eyebrow" role="status">
-                      Checking image previews…
-                    </span>
-                  ) : Object.values(statuses).some((s) => s.hasMore) ? (
-                    <button
-                      className="outline"
-                      onClick={() => setPage((p) => p + 1)}
-                    >
-                      Load more records <Plus size={16} />
-                    </button>
-                  ) : (
-                    <span className="eyebrow">
-                      {items.length
-                        ? "You’ve reached the end of these records."
-                        : "A new search is a new beginning."}
-                    </span>
-                  )}
-                </div>
+                <InfiniteResults
+                  key={serializeQuery(query)}
+                  enabled={Object.values(statuses).some((s) => s.hasMore)}
+                  busy={loading || previews.pending}
+                  page={page}
+                  onNext={nextPage}
+                />
               </section>
             </div>
           </>
@@ -1091,7 +1161,12 @@ export function Scout() {
                     </p>
                     <button
                       className="primary"
-                      onClick={() => search("travel poster")}
+                      onClick={() => {
+                        discoverySeed.current = Math.floor(
+                          Math.random() * 2147483647,
+                        );
+                        setRetry((n) => n + 1);
+                      }}
                     >
                       Find your first image <ArrowRight size={16} />
                     </button>

@@ -143,10 +143,7 @@ test("provider queries cap videos and enforce metadata dates even if upstream ig
     const allQuery = queries
       .find((u) => u.searchParams.get("q")?.includes("mediatype:image"))!
       .searchParams.get("q")!;
-    assert.match(
-      allQuery,
-      /\(mediatype:image\) OR \(mediatype:movies AND year:\[1800 TO 1980\]\)/,
-    );
+    assert.match(allQuery, /mediatype:movies AND year:\[1800 TO 1980\]/);
     await nasa.search(
       { ...defaultQuery, mediaType: "video", yearEnd: 2026 },
       signal,

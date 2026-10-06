@@ -53,6 +53,8 @@ export function years(value: unknown): {
 export function material(value: string): string {
   const s = value.toLowerCase();
   const rules: [RegExp, string][] = [
+    [/comic|bande dessinee/, "Comic"],
+    [/newspaper/, "Newspaper"],
     [/postcard/, "Postcard"],
     [/poster/, "Poster"],
     [/advertis/, "Advertisement"],
