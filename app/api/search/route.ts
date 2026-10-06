@@ -1,3 +1,4 @@
+import { matchesCountry, providerCountries } from "@/lib/countries";
 import { NextRequest, NextResponse } from "next/server";
 import { providers } from "@/lib/providers";
 import { parseQuery } from "@/lib/query";
@@ -13,6 +14,18 @@ export async function GET(request: NextRequest) {
   if (!Object.hasOwn(providers, id))
     return NextResponse.json({ error: "Unknown archive" }, { status: 400 });
   const q = parseQuery(p);
+  if (
+    q.countries.length &&
+    id !== "europeana" &&
+    !providerCountries(id).some((c) => q.countries.includes(c))
+  )
+    return NextResponse.json({
+      provider: id,
+      items: [],
+      total: 0,
+      hasMore: false,
+      status: "ok",
+    } satisfies ProviderResult);
   if (
     q.mediaType === "video" &&
     !["nasa", "internetarchive", "europeana", "digitalnz"].includes(id)
@@ -31,6 +44,7 @@ export async function GET(request: NextRequest) {
     q.yearEnd,
     q.page,
     q.mediaType,
+    q.countries,
   ]);
   const hit = cache.get(key);
   if (hit) return NextResponse.json(hit);
@@ -40,7 +54,9 @@ export async function GET(request: NextRequest) {
       AbortSignal.timeout(18000),
     ]);
     const result = await providers[id].search(q, signal);
-    result.items = result.items.filter(allowsHistoricalVideo);
+    result.items = result.items.filter(
+      (i) => allowsHistoricalVideo(i) && matchesCountry(i, q.countries),
+    );
     if (result.status === "ok") cache.set(key, result);
     return NextResponse.json(result);
   } catch {

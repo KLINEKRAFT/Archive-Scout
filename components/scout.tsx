@@ -1,4 +1,5 @@
 "use client";
+import { uniqueRecords } from "@/lib/duplicates";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -159,6 +160,7 @@ export function Scout() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   const sourceKey = query.providers.join(",");
+  const countryKey = query.countries.join(",");
   const textKey = query.textQuery;
   const mediaKey = query.mediaType;
   const from = query.yearStart;
@@ -191,7 +193,7 @@ export function Scout() {
             if (!alive) return;
             setStatuses((s) => ({ ...s, [id]: r }));
             setItems((prev) =>
-              deduplicate([
+              uniqueRecords([
                 ...prev,
                 ...r.items.map((i) => ({
                   ...i,
@@ -232,6 +234,7 @@ export function Scout() {
     textKey,
     mediaKey,
     sourceKey,
+    countryKey,
     from,
     to,
     page,
@@ -315,6 +318,8 @@ export function Scout() {
                   ...record,
                   dominantColors: prev.dominantColors,
                   verifiedPreviewUrl: prev.verifiedPreviewUrl,
+                  identityKeys: prev.identityKeys,
+                  visualFingerprint: prev.visualFingerprint,
                 }
               : prev,
           );

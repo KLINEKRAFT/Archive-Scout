@@ -1,3 +1,4 @@
+import { providerCountries } from "./countries";
 import type { ArchiveItem, ProviderId } from "./types";
 import { PROVIDERS } from "./types";
 import { classifyRights } from "./rights";
@@ -90,6 +91,7 @@ export function item(
     previewUrl: "",
     sourceUrl: "",
     institution: p.name,
+    archiveCountries: providerCountries(provider),
     downloadOptions: [],
     dominantColors: [],
     originalMetadata: raw,

@@ -1,3 +1,4 @@
+import { COUNTRIES, countryCodes } from "../countries";
 import type { ArchiveProvider } from "../types";
 import { item, material } from "../normalize";
 import { classifyRights } from "../rights";
@@ -58,6 +59,9 @@ export const europeana: ArchiveProvider = {
         .find(Boolean) || "";
     const image = video ? "" : shownBy[0] || "";
     return item("europeana", r, {
+      archiveCountries: countryCodes(
+        values(r.country || r.europeanaAggregation?.edmCountry),
+      ),
       providerItemId: id,
       title: title.join("; "),
       description: [...values(r.dcDescription), ...field("dcDescription")].join(
@@ -135,6 +139,11 @@ export const europeana: ArchiveProvider = {
           ? image
           : `(${image}) OR (${video})`,
     );
+    if (q.countries.length)
+      query.append(
+        "qf",
+        `COUNTRY:(${q.countries.map((c) => `"${COUNTRIES.find(([code]) => code === c)?.[1] || c}"`).join(" OR ")})`,
+      );
     const r = await json(`${base}/search.json?${query}`, signal, headers());
     if (r.success === false || !Array.isArray(r.items)) {
       if (r.success !== false && r.totalResults === 0)

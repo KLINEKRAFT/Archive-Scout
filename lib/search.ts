@@ -1,21 +1,14 @@
 import type { ArchiveItem, SearchQuery } from "./types";
 import { allowsHistoricalVideo } from "./video-policy";
 import { paletteScore } from "./color";
-export function deduplicate(items: ArchiveItem[]): ArchiveItem[] {
-  const seen = new Set<string>();
-  return items.filter((i) => {
-    const key = i.fullImageUrl || i.sourceUrl || i.id;
-    if (seen.has(i.id) || seen.has(key)) return false;
-    seen.add(i.id);
-    seen.add(key);
-    return true;
-  });
-}
+export { deduplicate } from "./duplicates";
+import { matchesCountry } from "./countries";
 export function filterAndRank(
   items: ArchiveItem[],
   q: SearchQuery,
 ): ArchiveItem[] {
-  const filtered = deduplicate(items).filter((i) => {
+  const filtered = items.filter((i) => {
+    if (!matchesCountry(i, q.countries)) return false;
     if (!allowsHistoricalVideo(i)) return false;
     if (!q.providers.includes(i.provider)) return false;
     if (q.mediaType !== "all" && (i.mediaType || "image") !== q.mediaType)

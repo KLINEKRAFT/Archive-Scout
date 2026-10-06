@@ -12,6 +12,7 @@
     "format": "prettier --write app components lib tests next.config.ts tsconfig.json package.json README.md"
   },
   "dependencies": {
+    "fast-xml-parser": "^5.11.2",
     "lucide-react": "^0.468.0",
     "next": "^16.0.0",
     "react": "^19.2.0",

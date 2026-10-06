@@ -1,4 +1,5 @@
 "use client";
+import { deduplicate } from "@/lib/duplicates";
 import { useEffect, useState } from "react";
 import type { ArchiveItem } from "@/lib/types";
 import {
@@ -43,8 +44,42 @@ export function loadVideo(url: string): Promise<boolean> {
   });
 }
 
+// Compare decoded pixels, not filenames. CORS failures retain URL-based identities.
+async function fingerprint(url: string): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    const image = new window.Image();
+    image.crossOrigin = "anonymous";
+    const finish = (value?: string) => {
+      clearTimeout(timer);
+      image.onload = image.onerror = null;
+      resolve(value);
+    };
+    const timer = setTimeout(() => finish(), 3000);
+    image.onerror = () => finish();
+    image.onload = async () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 32;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) return finish();
+        context.drawImage(image, 0, 0, 32, 32);
+        const pixels = context.getImageData(0, 0, 32, 32).data;
+        const digest = await crypto.subtle.digest("SHA-256", pixels);
+        finish(
+          `${Math.round((image.naturalWidth / image.naturalHeight) * 1000)}:${Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("")}`,
+        );
+      } catch {
+        finish();
+      }
+    };
+    image.src = url;
+  });
+}
+
 export function usePreviews(items: ArchiveItem[]) {
-  const [results, setResults] = useState<Record<string, string | null>>({});
+  const [results, setResults] = useState<
+    Record<string, { url: string; fingerprint?: string } | null>
+  >({});
   // Palette/metadata updates must not restart image validation.
   const requestKey = JSON.stringify(
     items.map((i) => [
@@ -64,7 +99,10 @@ export function usePreviews(items: ArchiveItem[]) {
         if (Object.hasOwn(results, key)) continue;
         let url = await firstWorkingPreview(urls, loadImage);
         if (url && videoUrl && !(await loadVideo(videoUrl))) url = null;
-        if (!cancelled) setResults((prev) => ({ ...prev, [key]: url }));
+        const value = url
+          ? { url, fingerprint: videoUrl ? undefined : await fingerprint(url) }
+          : null;
+        if (!cancelled) setResults((prev) => ({ ...prev, [key]: value }));
       }
     }
     void Promise.all(Array.from({ length: 6 }, worker));
@@ -75,10 +113,20 @@ export function usePreviews(items: ArchiveItem[]) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestKey]);
   return {
-    items: items.flatMap((item) => {
-      const url = results[previewKey(item)];
-      return url ? [{ ...item, verifiedPreviewUrl: url }] : [];
-    }),
+    items: deduplicate(
+      items.flatMap((item) => {
+        const result = results[previewKey(item)];
+        return result
+          ? [
+              {
+                ...item,
+                verifiedPreviewUrl: result.url,
+                visualFingerprint: result.fingerprint || item.visualFingerprint,
+              },
+            ]
+          : [];
+      }),
+    ),
     pending: items.some((item) => !Object.hasOwn(results, previewKey(item))),
   };
 }
