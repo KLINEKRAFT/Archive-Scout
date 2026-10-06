@@ -13,7 +13,10 @@ export async function GET(request: NextRequest) {
   if (!Object.hasOwn(providers, id))
     return NextResponse.json({ error: "Unknown archive" }, { status: 400 });
   const q = parseQuery(p);
-  if (q.mediaType === "video" && !["nasa", "internetarchive"].includes(id))
+  if (
+    q.mediaType === "video" &&
+    !["nasa", "internetarchive", "europeana", "digitalnz"].includes(id)
+  )
     return NextResponse.json({
       provider: id,
       items: [],

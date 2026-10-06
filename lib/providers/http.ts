@@ -1,9 +1,15 @@
-export async function json(url: string, signal: AbortSignal): Promise<any> {
+export async function json(
+  url: string,
+  signal: AbortSignal,
+  credentials: Record<string, string> = {},
+): Promise<any> {
   const response = await fetch(url, {
     signal,
+    redirect: Object.keys(credentials).length ? "error" : "follow",
     headers: {
       "User-Agent": process.env.ARCHIVE_USER_AGENT || "ArchiveScout/0.1",
       Accept: "application/json",
+      ...credentials,
     },
     cache: "no-store",
   });

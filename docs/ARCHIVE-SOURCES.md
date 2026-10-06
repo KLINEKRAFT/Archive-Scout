@@ -17,11 +17,11 @@ Internet Archive is an aggregator with contributor-supplied metadata and rights.
 
 API availability varies. Internet Archive returned successful results and playable files, but also an intermittent 502 and timeout during the live tests. The UI preserves other archives' results and allows retry. No authentication or rate-limit bypass is used.
 
-## Other viable expansion candidates, not integrated in this change
+## Further expansion status
 
 - **[NYPL Digital Collections API](https://api.repo.nypl.org/):** photographs, posters, menus, maps and ephemera. Requires a registered API token. Test a token-backed adapter before enabling it.
-- **[Europeana APIs](https://www.europeana.eu/en/apis):** cross-institution European cultural collections. [API-key registration](https://www.europeana.eu/en/how-to-register-for-and-manage-an-api-key) is available through a Europeana account. Media availability and licenses vary by contributing institution.
-- **[DigitalNZ](https://digitalnz.org/developers/api-docs-v3):** a promising additional national aggregator. Current documentation says public content no longer requires a key; a production adapter and media/rights mapping still need testing.
+- **[Europeana APIs](https://www.europeana.eu/en/apis):** cross-institution European cultural collections. [API-key registration](https://www.europeana.eu/en/how-to-register-for-and-manage-an-api-key) is available through a Europeana account. Now implemented; media availability and licenses vary by contributing institution.
+- **[DigitalNZ](https://digitalnz.org/developers/api-docs-v3):** a promising additional national aggregator. Current documentation says public content no longer requires a key; the adapter is now implemented with optional DIGITALNZ_API_KEY authentication and conservative media-rights mapping.
 - **[Trove](https://trove.nla.gov.au/sites/default/files/attachments/2023-05/Introducing%20Trove%20API%20v3_0%20-%20Release%202.pdf):** Australian collections and historical newspapers; the official v3 documentation describes key-based access. Verify current account eligibility before implementation.
 - **[Tulsa Historical Society & Museum](https://www.tulsahistory.org/learn/collections-research/):** substantial photographic and film holdings. I did not find a documented public search API in the reviewed institutional material, so this is not represented as an API provider. [Their photograph page](https://www.tulsahistory.org/learn/collections-research/photographs/) describes image requests and permissions. Some Beryl Ford material is already reachable through the library integration.
 

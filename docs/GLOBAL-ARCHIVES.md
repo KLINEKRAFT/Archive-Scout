@@ -2,7 +2,7 @@
 
 ## Recommended next API integrations
 
-These are researched candidates, not enabled search providers yet. Prioritize Europeana for reach, then DigitalNZ and V&A for straightforward adapters. Admission must still require a functioning preview; metadata availability alone is insufficient.
+Europeana and DigitalNZ are now implemented providers (Europeana requires its configured key; DigitalNZ supports optional keyed access). V&A and Gallica remain researched candidates. Admission must still require a functioning preview; metadata availability alone is insufficient.
 
 | Archive | Coverage / fit | Integration evidence |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ These are researched candidates, not enabled search providers yet. Prioritize Eu
 
 ## Historical film available online
 
-The links below lead to institutional viewing/search collections. They are not yet integrated into Archive Scout, and I have not verified a public search-and-playback API for these film sites. No stream scraping or automatic ingestion is proposed without a supported access path.
+The film sites below lead to institutional viewing/search collections. They are not yet integrated as separate providers into Archive Scout, and I have not verified a public search-and-playback API for these film sites. No stream scraping or automatic ingestion is proposed without a supported access path.
 
 | Region / source | Relevant online material | Date / access notes |
 | --- | --- | --- |

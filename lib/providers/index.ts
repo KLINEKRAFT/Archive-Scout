@@ -1,3 +1,5 @@
+import { europeana } from "./europeana";
+import { digitalnz } from "./digitalnz";
 import { tulsa, oklahoma } from "./contentdm";
 import { nasa } from "./nasa";
 import { internetArchive } from "./internet-archive";
@@ -10,6 +12,8 @@ import { dpla } from "./dpla";
 import { smithsonian } from "./smithsonian";
 import type { ArchiveProvider, ProviderId } from "../types";
 export const providers: Record<ProviderId, ArchiveProvider> = {
+  europeana,
+  digitalnz,
   tulsa,
   oklahoma,
   nasa,

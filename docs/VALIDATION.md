@@ -44,3 +44,10 @@ No public deployment, embedding backend, account synchronization, or full-corpus
 - Mock upstream tests verify query caps and rejection of newer records even when an upstream response ignores its filter.
 - Browser review of the production build on localhost:3033: `advertising`, Internet Archive, Video, 1960–1969 returned 11 verified video preview cards. The persistent 1980 cutoff notice is visible beside the media controls.
 - Global archive research is documented in GLOBAL-ARCHIVES.md; those additional institutions are not presented as implemented providers.
+
+## Europeana and DigitalNZ integrations
+
+- 32 deterministic tests pass; production build and TypeScript pass.
+- Tests cover both response envelopes, Europeana multilingual record details, header-only credential transport, authenticated redirect rejection, missing-key behavior, source-ID validation, metadata-versus-media rights, multi-date video cutoff enforcement, and omission of external-player-only video records.
+- Real DigitalNZ search and record endpoints were checked without credentials. Browser verification of `advertising`, Images, 1960–1969 displayed 18 loaded image previews and no “Preview unavailable” text.
+- Europeana requires the Vercel-configured key for live verification. No key values are downloaded or included in the source tree.
