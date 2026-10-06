@@ -97,6 +97,9 @@ export function Filters({
             </button>
           ))}
         </div>
+        <p className="field-hint">
+          Videos: 1980 and earlier. Undated videos are excluded.
+        </p>
       </fieldset>
       <details open>
         <summary>

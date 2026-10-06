@@ -36,3 +36,11 @@ No public deployment, embedding backend, account synchronization, or full-corpus
 - Internet Archive also produced an intermittent upstream 502 and timeout during repeated live API tests. Those failures use the existing source-unavailable/retry UI without affecting other providers.
 - Verified the new homepage Tulsa shortcut, the eleven-source count, and no horizontal overflow at the default desktop viewport.
 - 22 deterministic tests and final production build/TypeScript pass. The browser checks use live archive data, not fixtures. Video verification preloads metadata only; full playback begins on user interaction.
+
+## Historical video cutoff
+
+- 26 deterministic tests passed; production build and TypeScript passed.
+- Boundary checks include 1980, 1981, undated videos, 1980s decade, ranges spanning 1980, ambiguous shorthand dates, source date precedence, All-media searches, and newer still images.
+- Mock upstream tests verify query caps and rejection of newer records even when an upstream response ignores its filter.
+- Browser review of the production build on localhost:3033: `advertising`, Internet Archive, Video, 1960–1969 returned 11 verified video preview cards. The persistent 1980 cutoff notice is visible beside the media controls.
+- Global archive research is documented in GLOBAL-ARCHIVES.md; those additional institutions are not presented as implemented providers.

@@ -1,0 +1,39 @@
+# Global archives and historical film — researched 6 October 2026
+
+## Recommended next API integrations
+
+These are researched candidates, not enabled search providers yet. Prioritize Europeana for reach, then DigitalNZ and V&A for straightforward adapters. Admission must still require a functioning preview; metadata availability alone is insufficient.
+
+| Archive | Coverage / fit | Integration evidence |
+| --- | --- | --- |
+| [Europeana](https://www.europeana.eu/en/apis) | Cross-institution European photographs, artworks, newspapers and video | Search/record APIs. [Personal and project API keys](https://www.europeana.eu/en/how-to-register-for-and-manage-an-api-key); project key is the appropriate production route. Inspect each contributor's media and rights. |
+| [DigitalNZ](https://digitalnz.org/developers/api-docs-v3) | New Zealand heritage across collections; images and audiovisual discovery | Public metadata no longer requires a key, but shared anonymous rate limits apply. [Search API](https://digitalnz.org/developers/api-docs-v3/search-records-api-v3) supplies category, dates, thumbnails and source links. A Video category does not guarantee an embeddable stream. |
+| [V&A](https://developers.vam.ac.uk/guide/v2/search/introduction.html) | UK museum collections; useful candidate for graphic design and decorative arts | Documented collections search API and [quick start](https://developers.vam.ac.uk/guide/v2/quick-start.html). Confirm image availability and rights per record in adapter tests. |
+| [Gallica / BnF](https://api.bnf.fr/fr/api-gallica-de-recherche) | French digitized heritage, photographs, prints and publications | SRU search plus [IIIF image/presentation APIs](https://www.data.gouv.fr/dataservices/api-gallica-iiif). Metadata licensing and image reuse terms are separate. |
+
+## Historical film available online
+
+The links below lead to institutional viewing/search collections. They are not yet integrated into Archive Scout, and I have not verified a public search-and-playback API for these film sites. No stream scraping or automatic ingestion is proposed without a supported access path.
+
+| Region / source | Relevant online material | Date / access notes |
+| --- | --- | --- |
+| Australia — [NFSA Holden car ads](https://www.nfsa.gov.au/collection/curated/general-motors-holden) | Cinema and TV commercials; particularly strong match for retro advertising | The institution dates this collection to **1955–1976**. Its broader Ads page also includes modern footage, so use the dated collection. |
+| Australia — [NFSA Berlei](https://www.nfsa.gov.au/collection/curated/100-years-berlei) | Cinema and television fashion/underwear advertising | Described as ads from the **1920s–1960s**. Check individual dates before admission. |
+| Japan — [Japanese Animated Film Classics](https://animation.filmarchives.jp/en/index.html) | Early Japanese animation | [NFAJ's official online-services page](https://www.nfaj.go.jp/english/onlineservice/) describes the early-animation collection and links to it. |
+| Japan — [Great Kanto Earthquake films](https://kantodaishinsai.filmarchives.jp/) | Historical documentary footage | Films of the **1923** disaster, linked by NFAJ. |
+| Canada — [NFB: Toronto Boom Town](https://www.nfb.ca/film/toronto_boom_town/) | Mid-century city life, streets, industry and transport | The film description identifies **1951** Toronto. NFB also offers broader documentary and animation search; individual access and reuse conditions vary. |
+| UK / international — [British Pathé](https://www.britishpathe.com/) | Twentieth-century news films | Search by production date and admit only 1980 or earlier. The site expressly requires a licence for footage use. A general archive homepage is not itself a date-filtered result list. |
+
+[European Film Gateway](https://pro.europeana.eu/organisation/the-european-film-gateway) is also a strong discovery lead: a film-domain aggregator with partners across more than 25 countries. Investigate its records through Europeana before promising direct video playback.
+
+BFI is valuable, but [BFI Player's search page](https://player.bfi.org.uk/search) currently states that its films are not available to watch in the US. It is therefore a lower-priority playback integration for this Oklahoma-based user.
+
+## Enforced Archive Scout video policy
+
+- 1980 is included; 1981 onward is excluded, including in All-media results and saved collections.
+- Unknown, approximate, ambiguous or open-ended dates are excluded. Ranges must end by 1980; a 1980s decade is excluded.
+- Use catalog production/date fields. Never infer filming dates from a title, upload timestamp or historical subject. Internet Archive's explicit `proddate` takes precedence when available.
+- NASA's modern catalog dates may describe digitization/publication. Such records are excluded even if the footage may actually be old; a verified production-date mapping would be needed to recover them.
+- Search and item APIs enforce the rule; query controls cannot override it. Upstream filters reduce irrelevant results, and normalized metadata is rechecked.
+- Existing image/video preview checks remain required. Still images are not subject to the 1980 ceiling.
+- Dates remain contributor/catalog metadata, not independent historical authentication. Public viewing does not imply reusable footage.
