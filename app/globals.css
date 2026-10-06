@@ -2369,3 +2369,56 @@ a svg {
   color: inherit;
   font-size: 12px;
 }
+
+.historical-collections {
+  padding: 64px 0;
+  border-top: 1px solid var(--line);
+}
+.collection-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+.collection-shortcuts button {
+  text-align: left;
+  padding: 22px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+}
+.collection-shortcuts button:hover {
+  border-color: var(--red);
+}
+.collection-shortcuts strong {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 17px;
+  font-weight: 500;
+}
+.collection-shortcuts span {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 10px;
+  color: var(--muted);
+}
+.collection-select {
+  width: 100%;
+  padding: 9px 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .collection-shortcuts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .collection-shortcuts {
+    grid-template-columns: 1fr;
+  }
+}

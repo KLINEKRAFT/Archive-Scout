@@ -1,3 +1,4 @@
+import { archiveCollection } from "@/lib/collections";
 import { matchesCountry, providerCountries } from "@/lib/countries";
 import { NextRequest, NextResponse } from "next/server";
 import { providers } from "@/lib/providers";
@@ -14,6 +15,15 @@ export async function GET(request: NextRequest) {
   if (!Object.hasOwn(providers, id))
     return NextResponse.json({ error: "Unknown archive" }, { status: 400 });
   const q = parseQuery(p);
+  const collection = archiveCollection(q.collection);
+  if (collection && !collection.providers.includes(id))
+    return NextResponse.json({
+      provider: id,
+      items: [],
+      total: 0,
+      hasMore: false,
+      status: "ok",
+    } satisfies ProviderResult);
   if (
     q.countries.length &&
     id !== "europeana" &&
@@ -28,7 +38,7 @@ export async function GET(request: NextRequest) {
     } satisfies ProviderResult);
   if (
     q.mediaType === "video" &&
-    !["nasa", "internetarchive", "europeana", "digitalnz"].includes(id)
+    !["loc", "nasa", "internetarchive", "europeana", "digitalnz"].includes(id)
   )
     return NextResponse.json({
       provider: id,
@@ -40,6 +50,7 @@ export async function GET(request: NextRequest) {
   const key = JSON.stringify([
     id,
     q.textQuery,
+    q.collection,
     q.yearStart,
     q.yearEnd,
     q.page,

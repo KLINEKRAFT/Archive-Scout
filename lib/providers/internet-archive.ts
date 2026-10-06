@@ -1,5 +1,6 @@
+import { archiveCollection } from "../collections";
 import type { ArchiveProvider } from "../types";
-import { item, list, plain, years, num } from "../normalize";
+import { item, list, plain, years, num, material } from "../normalize";
 import { classifyRights } from "../rights";
 import { providerText } from "../query";
 import { json, params } from "./http";
@@ -20,6 +21,7 @@ export const internetArchive: ArchiveProvider = {
     const d = r.metadata || r;
     const id = identifier(d.identifier);
     const video = d.mediatype === "movies";
+    const print = d.mediatype === "texts";
     const date = video ? d.proddate || d.date || d.year : d.date || d.year;
     const files = (r.files || []).filter((f: any) => !f.private);
     const fileUrl = (name: string) =>
@@ -44,18 +46,26 @@ export const internetArchive: ArchiveProvider = {
       dateDisplay: plain(date) || "Date unknown",
       ...(video ? videoYears(date) : years(date)),
       mediaType: video ? "video" : "image",
-      objectType: video ? "Film / Video" : "Photography",
+      objectType: video
+        ? "Film / Video"
+        : print
+          ? material(`${list(d.subject).join(" ")} ${plain(d.title)}`) ===
+            "Other"
+            ? "Book"
+            : material(`${list(d.subject).join(" ")} ${plain(d.title)}`)
+          : "Photography",
       subjects: list(d.subject),
       collection: list(d.collection)
         .filter((c) => !c.startsWith("fav-"))
         .join("; "),
       thumbnailUrl: `${base}/services/img/${id}`,
-      previewUrl: video
-        ? `${base}/services/img/${id}`
-        : images[0]
-          ? fileUrl(images[0].name)
-          : "",
-      videoUrl: movies[0] ? fileUrl(movies[0].name) : undefined,
+      previewUrl:
+        video || print
+          ? `${base}/services/img/${id}`
+          : images[0]
+            ? fileUrl(images[0].name)
+            : "",
+      videoUrl: video && movies[0] ? fileUrl(movies[0].name) : undefined,
       duration: plain(d.runtime) || undefined,
       sourceUrl: `${base}/details/${id}`,
       ...classifyRights(
@@ -64,17 +74,24 @@ export const internetArchive: ArchiveProvider = {
         undefined,
         "Internet Archive item rights and license metadata, as supplied by its contributor; not independently verified.",
       ),
-      downloadOptions: (video ? movies : images).slice(0, 8).map((f: any) => ({
-        label: plain(f.format || f.name),
-        url: fileUrl(f.name),
-        bytes: num(f.size),
-        width: num(f.width),
-        height: num(f.height),
-      })),
+      downloadOptions: (video
+        ? movies
+        : print
+          ? files.filter((f: any) => /\.(pdf|epub)$/i.test(f.name))
+          : images
+      )
+        .slice(0, 8)
+        .map((f: any) => ({
+          label: plain(f.format || f.name),
+          url: fileUrl(f.name),
+          bytes: num(f.size),
+          width: num(f.width),
+          height: num(f.height),
+        })),
     });
   },
   async search(q, signal) {
-    const text = providerText(q)
+    const text = (q.collection && !q.textQuery ? "" : providerText(q))
       .replace(/[+\-!(){}\[\]^"~*?:\\/|&]/g, " ")
       .trim()
       .split(/\s+/)
@@ -91,13 +108,19 @@ export const internetArchive: ArchiveProvider = {
         hasMore: false,
         status: "ok",
       };
+    const printMedia = `mediatype:texts AND year:[${Math.max(q.yearStart ?? 1800, 1800)} TO ${Math.min(q.yearEnd ?? 1980, 1980)}]`;
+    const stillMedia =
+      (q.yearStart ?? 0) > 1980
+        ? imageMedia
+        : `(${imageMedia}) OR (${printMedia})`;
     const media =
       q.mediaType === "video"
         ? movieMedia
         : q.mediaType === "image" || (q.yearStart ?? 0) > VIDEO_YEAR_LIMIT
-          ? imageMedia
-          : `(${imageMedia}) OR (${movieMedia})`;
-    const query = `${text ? `(${text}) AND ` : ""}(${media}) AND -access-restricted-item:true`;
+          ? stillMedia
+          : `(${stillMedia}) OR (${movieMedia})`;
+    const scope = archiveCollection(q.collection)?.iaFilter;
+    const query = `${scope ? `(${scope}) AND ` : ""}${text ? `(${text}) AND ` : ""}(${media}) AND -access-restricted-item:true`;
     const r = await json(
       `${base}/advancedsearch.php?${params({ q: query, output: "json", rows: 12, page: q.page, "fl[]": "identifier" })}`,
       signal,
@@ -108,8 +131,21 @@ export const internetArchive: ArchiveProvider = {
     return {
       provider: "internetarchive",
       items: records
+        .filter(
+          (r) =>
+            r.metadata?.["access-restricted-item"] !== true &&
+            r.metadata?.["access-restricted-item"] !== "true",
+        )
         .map(internetArchive.normalizeItem)
         .filter(allowsHistoricalVideo)
+        .filter(
+          (i) =>
+            (i.originalMetadata.metadata as any)?.mediatype !== "texts" ||
+            (i.yearStart !== undefined &&
+              i.yearStart >= 1800 &&
+              (i.yearEnd ?? i.yearStart) <= 1980 &&
+              i.downloadOptions.length > 0),
+        )
         .filter((i) =>
           i.mediaType === "video" ? !!i.videoUrl : !!i.previewUrl,
         ),

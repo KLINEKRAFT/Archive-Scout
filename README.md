@@ -118,3 +118,9 @@ Results are filtered, then browser-verified, then grouped by provider record IDs
 This does not guarantee identification of every independently scanned, cropped, or recompressed copy. Unrelated URLs without readable pixels may remain unmatched. Country means the supplying archive's location/coverage, not where an object was made or photographed. Unknown countries are excluded by an active country filter. Europeana's country metadata and query facets are used where available.
 
 V&A date bounds may span a century; those broad ranges remain visible as catalogued rather than being relabeled with the selected decade. Gallica keeps original work rights separate from digitization reuse terms. Neither source grants blanket commercial reuse permission.
+
+## Discovery and historical collections
+
+The home page now shows a shuffled, interleaved photo mix from AIC, Cleveland, LOC and NASA, with working-preview validation and a Shuffle discoveries control. Search results load additional pages automatically near the bottom; exhausted sources and repeated pages stop without requiring a Load more button.
+
+Collection shortcuts cover WPA and WWI posters, WWII posters, Prelinger films, the National Screening Room, WWI/WWII films, trade catalogs, comics and other print scans. Internet Archive text scans are limited to known dates from 1800–1980 and public document files. LOC movies require playable MP4s and the existing <=1980 video date policy. See [film and print research](docs/FILM-AND-PRINT-COLLECTIONS.md) for source documentation and additional candidates.

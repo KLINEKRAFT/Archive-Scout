@@ -92,6 +92,7 @@ export interface ArchiveItem extends Rights {
   originalMetadata: Record<string, unknown>;
 }
 export interface SearchQuery {
+  collection: string;
   textQuery: string;
   mediaType: "all" | "image" | "video";
   yearStart?: number;
@@ -136,6 +137,8 @@ export interface SavedPalette {
 }
 export const MATERIALS = [
   "Photography",
+  "Comic",
+  "Newspaper",
   "Film / Video",
   "Illustration",
   "Advertisement",
