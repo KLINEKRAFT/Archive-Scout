@@ -691,6 +691,21 @@ export function Scout() {
                     <span>{c.description}</span>
                   </button>
                 ))}
+                <a
+                  href="https://www.nfsa.gov.au/collection/curated/general-motors-holden"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Holden car ads, Australia, 1955–1976. Watch on NFSA (opens in a new tab)"
+                >
+                  <strong>
+                    Holden car ads
+                    <ArrowUpRight size={16} />
+                  </strong>
+                  <span>Australia’s NFSA · 1955–1976</span>
+                  <span className="external-collection-note">
+                    Watch on NFSA · opens in a new tab
+                  </span>
+                </a>
               </div>
             </section>
             <section className="palette-editorial">

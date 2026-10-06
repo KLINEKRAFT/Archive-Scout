@@ -2380,14 +2380,16 @@ a svg {
   gap: 12px;
   margin-top: 28px;
 }
-.collection-shortcuts button {
+.collection-shortcuts button,
+.collection-shortcuts a {
   text-align: left;
   padding: 22px;
   border: 1px solid var(--line);
   background: transparent;
   color: inherit;
 }
-.collection-shortcuts button:hover {
+.collection-shortcuts button:hover,
+.collection-shortcuts a:hover {
   border-color: var(--red);
 }
 .collection-shortcuts strong {
@@ -2494,4 +2496,12 @@ a svg {
   .search-activity-count {
     display: none;
   }
+}
+
+.collection-shortcuts a {
+  text-decoration: none;
+}
+.collection-shortcuts .external-collection-note {
+  color: var(--red);
+  font-size: 10px;
 }

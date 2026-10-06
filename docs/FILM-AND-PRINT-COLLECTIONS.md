@@ -32,3 +32,7 @@ Searches automatically fetch the next page near the bottom of the result grid, o
 - National Screening Room admitted 23 film previews. Opened the 1918 film Last known home of Czar Nicholas; its MP4 reached readyState 4, 1440-pixel width and 115.875-second duration in the native player.
 - Trade catalogs displayed 11 cover previews with no Preview unavailable cards.
 - Live adapters returned WPA posters, Screening Room films, Prelinger movies, trade catalogs and comics. Catalog/comic scans expose public PDF/EPUB options and exclude private files.
+
+## NFSA Holden collection
+
+The home collection grid includes a clearly labeled **Watch on NFSA** link to [Holden car ads, 1955–1976](https://www.nfsa.gov.au/collection/curated/general-motors-holden). It opens the official collection in a new tab. This is an external viewing collection, not an API provider or an assertion of in-app playback. No NFSA thumbnails or streams are ingested. No supported public embed/API was verified, and [NFSA's current terms](https://www.nfsa.gov.au/footer/web-terms-of-use) require permission for automated ingestion. Revisit direct integration when a supported access path is available.
