@@ -4,6 +4,11 @@ import { classifyRights } from "../rights";
 import { providerText } from "../query";
 import { json, params } from "./http";
 import { mapRecords } from "./batch";
+import {
+  allowsHistoricalVideo,
+  videoYears,
+  VIDEO_YEAR_LIMIT,
+} from "../video-policy";
 const base = "https://archive.org";
 const identifier = (id: string) => {
   if (!/^[\w.-]+$/.test(id)) throw new Error("Invalid archive identifier");
@@ -15,6 +20,7 @@ export const internetArchive: ArchiveProvider = {
     const d = r.metadata || r;
     const id = identifier(d.identifier);
     const video = d.mediatype === "movies";
+    const date = video ? d.proddate || d.date || d.year : d.date || d.year;
     const files = (r.files || []).filter((f: any) => !f.private);
     const fileUrl = (name: string) =>
       `${base}/download/${id}/${name.split("/").map(encodeURIComponent).join("/")}`;
@@ -35,8 +41,8 @@ export const internetArchive: ArchiveProvider = {
       title: plain(d.title),
       description: list(d.description).join(" "),
       creator: list(d.creator).join("; "),
-      dateDisplay: plain(d.date || d.year) || "Date unknown",
-      ...years(d.date || d.year),
+      dateDisplay: plain(date) || "Date unknown",
+      ...(video ? videoYears(date) : years(date)),
       mediaType: video ? "video" : "image",
       objectType: video ? "Film / Video" : "Photography",
       subjects: list(d.subject),
@@ -58,15 +64,13 @@ export const internetArchive: ArchiveProvider = {
         undefined,
         "Internet Archive item rights and license metadata, as supplied by its contributor; not independently verified.",
       ),
-      downloadOptions: (video ? movies : images)
-        .slice(0, 8)
-        .map((f: any) => ({
-          label: plain(f.format || f.name),
-          url: fileUrl(f.name),
-          bytes: num(f.size),
-          width: num(f.width),
-          height: num(f.height),
-        })),
+      downloadOptions: (video ? movies : images).slice(0, 8).map((f: any) => ({
+        label: plain(f.format || f.name),
+        url: fileUrl(f.name),
+        bytes: num(f.size),
+        width: num(f.width),
+        height: num(f.height),
+      })),
     });
   },
   async search(q, signal) {
@@ -77,13 +81,23 @@ export const internetArchive: ArchiveProvider = {
       .filter(Boolean)
       .map((t) => `"${t}"`)
       .join(" AND ");
+    const movieMedia = `mediatype:movies AND year:[${q.yearStart ?? 1800} TO ${Math.min(q.yearEnd ?? VIDEO_YEAR_LIMIT, VIDEO_YEAR_LIMIT)}]`;
+    const imageMedia = `mediatype:image${q.yearStart !== undefined || q.yearEnd !== undefined ? ` AND year:[${q.yearStart ?? 1000} TO ${q.yearEnd ?? new Date().getFullYear()}]` : ""}`;
+    if (q.mediaType === "video" && (q.yearStart ?? 0) > VIDEO_YEAR_LIMIT)
+      return {
+        provider: "internetarchive",
+        items: [],
+        total: 0,
+        hasMore: false,
+        status: "ok",
+      };
     const media =
       q.mediaType === "video"
-        ? "movies"
-        : q.mediaType === "image"
-          ? "image"
-          : "(image OR movies)";
-    const query = `${text ? `(${text}) AND ` : ""}mediatype:${media} AND -access-restricted-item:true${q.yearStart !== undefined || q.yearEnd !== undefined ? ` AND year:[${q.yearStart ?? 1000} TO ${q.yearEnd ?? new Date().getFullYear()}]` : ""}`;
+        ? movieMedia
+        : q.mediaType === "image" || (q.yearStart ?? 0) > VIDEO_YEAR_LIMIT
+          ? imageMedia
+          : `(${imageMedia}) OR (${movieMedia})`;
+    const query = `${text ? `(${text}) AND ` : ""}(${media}) AND -access-restricted-item:true`;
     const r = await json(
       `${base}/advancedsearch.php?${params({ q: query, output: "json", rows: 12, page: q.page, "fl[]": "identifier" })}`,
       signal,
@@ -95,6 +109,7 @@ export const internetArchive: ArchiveProvider = {
       provider: "internetarchive",
       items: records
         .map(internetArchive.normalizeItem)
+        .filter(allowsHistoricalVideo)
         .filter((i) =>
           i.mediaType === "video" ? !!i.videoUrl : !!i.previewUrl,
         ),

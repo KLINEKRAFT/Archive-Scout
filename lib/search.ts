@@ -1,4 +1,5 @@
 import type { ArchiveItem, SearchQuery } from "./types";
+import { allowsHistoricalVideo } from "./video-policy";
 import { paletteScore } from "./color";
 export function deduplicate(items: ArchiveItem[]): ArchiveItem[] {
   const seen = new Set<string>();
@@ -15,6 +16,7 @@ export function filterAndRank(
   q: SearchQuery,
 ): ArchiveItem[] {
   const filtered = deduplicate(items).filter((i) => {
+    if (!allowsHistoricalVideo(i)) return false;
     if (!q.providers.includes(i.provider)) return false;
     if (q.mediaType !== "all" && (i.mediaType || "image") !== q.mediaType)
       return false;

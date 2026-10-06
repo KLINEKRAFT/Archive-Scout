@@ -33,6 +33,7 @@ import {
 } from "@/lib/query";
 import { filterAndRank, deduplicate, similarityService } from "@/lib/search";
 import { localResearchStorage } from "@/lib/storage";
+import { allowsHistoricalVideo } from "@/lib/video-policy";
 import { usePreviews } from "./use-previews";
 import { ItemGrid } from "./item-grid";
 import { Filters } from "./filters";
@@ -298,11 +299,16 @@ export function Scout() {
       { signal: controller.signal },
     )
       .then(async (r) => {
+        if (r.status === 404) {
+          setFailedPreviews((prev) => new Set([...prev, selected.id]));
+          setSelected((prev) => (prev?.id === selected.id ? null : prev));
+          return null;
+        }
         if (!r.ok) return null;
         return r.json();
       })
       .then((record: ArchiveItem | null) => {
-        if (record)
+        if (record && allowsHistoricalVideo(record))
           setSelected((prev) =>
             prev?.id === record.id
               ? {
@@ -328,7 +334,9 @@ export function Scout() {
         : isHome
           ? items
           : filterAndRank(items, query)
-      ).filter((item) => !failedPreviews.has(item.id)),
+      ).filter(
+        (item) => allowsHistoricalVideo(item) && !failedPreviews.has(item.id),
+      ),
     [items, query, isHome, view, boards, activeBoard, failedPreviews],
   );
   const previews = usePreviews(candidates);

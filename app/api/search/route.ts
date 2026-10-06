@@ -3,6 +3,7 @@ import { providers } from "@/lib/providers";
 import { parseQuery } from "@/lib/query";
 import { TTLCache } from "@/lib/cache";
 import type { ProviderId, ProviderResult } from "@/lib/types";
+import { allowsHistoricalVideo } from "@/lib/video-policy";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const cache = new TTLCache<ProviderResult>(200, 300_000);
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
       AbortSignal.timeout(18000),
     ]);
     const result = await providers[id].search(q, signal);
+    result.items = result.items.filter(allowsHistoricalVideo);
     if (result.status === "ok") cache.set(key, result);
     return NextResponse.json(result);
   } catch {

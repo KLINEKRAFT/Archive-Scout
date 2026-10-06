@@ -4,6 +4,11 @@ import { classifyRights } from "../rights";
 import { providerText } from "../query";
 import { json, params } from "./http";
 import { mapRecords } from "./batch";
+import {
+  allowsHistoricalVideo,
+  videoYears,
+  VIDEO_YEAR_LIMIT,
+} from "../video-policy";
 const base = "https://images-api.nasa.gov";
 function assetUrl(value: string) {
   const url = new URL(value);
@@ -46,7 +51,7 @@ export const nasa: ArchiveProvider = {
       institution: `NASA${d.center ? ` / ${d.center}` : ""}`,
       subjects: list(d.keywords),
       dateDisplay: d.date_created?.slice(0, 10),
-      ...years(d.date_created),
+      ...(video ? videoYears(d.date_created) : years(d.date_created)),
       mediaType: video ? "video" : "image",
       objectType: video ? "Film / Video" : "Photography",
       thumbnailUrl: thumb?.href,
@@ -81,18 +86,29 @@ export const nasa: ArchiveProvider = {
     });
   },
   async search(q, signal) {
+    if (q.mediaType === "video" && (q.yearStart ?? 0) > VIDEO_YEAR_LIMIT)
+      return {
+        provider: "nasa",
+        items: [],
+        total: 0,
+        hasMore: false,
+        status: "ok",
+      };
     const response = await json(
-      `${base}/search?${params({ q: providerText(q), media_type: q.mediaType === "all" ? "image,video" : q.mediaType, year_start: q.yearStart, year_end: q.yearEnd, page: q.page, page_size: 12 })}`,
+      `${base}/search?${params({ q: providerText(q), media_type: q.mediaType === "all" ? "image,video" : q.mediaType, year_start: q.yearStart, year_end: q.mediaType === "video" ? Math.min(q.yearEnd ?? VIDEO_YEAR_LIMIT, VIDEO_YEAR_LIMIT) : q.yearEnd, page: q.page, page_size: 12 })}`,
       signal,
     );
     const records = await mapRecords(
-      response.collection?.items || [],
+      (response.collection?.items || []).filter((r: any) =>
+        allowsHistoricalVideo(nasa.normalizeItem(r)),
+      ),
       (r: any) => enrich(r, signal),
     );
     return {
       provider: "nasa",
       items: records
         .map(nasa.normalizeItem)
+        .filter(allowsHistoricalVideo)
         .filter(
           (i) => i.thumbnailUrl && (i.mediaType !== "video" || i.videoUrl),
         ),
