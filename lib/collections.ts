@@ -12,6 +12,16 @@ export const ARCHIVE_COLLECTIONS: {
   iaFilter?: string;
 }[] = [
   {
+    id: "moving-image-archive",
+    title: "The Moving Image Archive",
+    description: "Searchable film clips · through 1980",
+    providers: ["movingimagearchive"],
+    mediaType: "video",
+    from: 1800,
+    to: 1980,
+    query: "",
+  },
+  {
     id: "wpa",
     title: "WPA posters",
     description: "Federal Art Project · 1936–1943",

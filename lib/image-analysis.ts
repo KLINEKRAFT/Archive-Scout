@@ -10,6 +10,7 @@ const cache = new TTLCache<Color[]>(1500, 86400000);
 const pending = new Map<string, Promise<Color[]>>();
 let active = 0;
 const hosts = [
+  "pub-075ff01374c04555b51c9bc50f258b42.r2.dev",
   "framemark.vam.ac.uk",
   "gallica.bnf.fr",
   "api.europeana.eu",

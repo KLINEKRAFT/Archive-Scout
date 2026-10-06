@@ -1,4 +1,9 @@
 export const PROVIDERS = [
+  {
+    id: "movingimagearchive",
+    name: "The Moving Image Archive",
+    code: "MIA / 16",
+  },
   { id: "loc", name: "Library of Congress", code: "LOC / 01" },
   { id: "dpla", name: "Digital Public Library of America", code: "DPLA / 02" },
   { id: "smithsonian", name: "Smithsonian", code: "SI / 03" },

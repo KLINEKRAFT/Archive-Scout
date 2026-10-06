@@ -1,3 +1,4 @@
+import { movingImageArchive } from "./moving-image-archive";
 import { vam } from "./vam";
 import { gallica } from "./gallica";
 import { europeana } from "./europeana";
@@ -14,6 +15,7 @@ import { dpla } from "./dpla";
 import { smithsonian } from "./smithsonian";
 import type { ArchiveProvider, ProviderId } from "../types";
 export const providers: Record<ProviderId, ArchiveProvider> = {
+  movingimagearchive: movingImageArchive,
   vam,
   gallica,
   europeana,
