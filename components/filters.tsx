@@ -65,6 +65,7 @@ export function Filters({
               ...q,
               yearStart: undefined,
               yearEnd: undefined,
+              mediaType: "all",
               types: [],
               rights: [],
               selectedColors: [],
@@ -77,6 +78,26 @@ export function Filters({
           <RotateCcw size={14} />
         </button>
       </div>
+      <fieldset className="media-filter">
+        <legend className="eyebrow">Media</legend>
+        <div className="media-options">
+          {(
+            [
+              ["all", "All"],
+              ["image", "Images"],
+              ["video", "Video"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              aria-pressed={q.mediaType === value}
+              onClick={() => set({ ...q, mediaType: value })}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
       <details open>
         <summary>
           Era{" "}
@@ -361,7 +382,10 @@ export function Filters({
       </details>
       <details open>
         <summary>
-          Source archives <span>{q.providers.length} / 7</span>
+          Source archives{" "}
+          <span>
+            {q.providers.length} / {PROVIDERS.length}
+          </span>
         </summary>
         {PROVIDERS.map((p) => (
           <label className="check-row source-row" key={p.id}>

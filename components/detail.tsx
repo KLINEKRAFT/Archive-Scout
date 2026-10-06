@@ -34,7 +34,8 @@ export function Detail({
   const [downloads, setDownloads] = useState(false);
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).matches("input,textarea,select")) return;
+      if ((e.target as HTMLElement).matches("input,textarea,select,video"))
+        return;
       if (e.key === "ArrowRight") onMove(1);
       if (e.key === "ArrowLeft") onMove(-1);
     };
@@ -70,26 +71,45 @@ export function Detail({
           <div>
             <button
               className="icon-button"
-              aria-label="Previous image"
+              aria-label="Previous result"
               onClick={() => onMove(-1)}
             >
               <ArrowLeft size={18} />
             </button>
             <button
               className="icon-button"
-              aria-label="Next image"
+              aria-label="Next result"
               onClick={() => onMove(1)}
             >
               <ArrowRight size={18} />
             </button>
           </div>
         </div>
-        <ArchiveImage
-          key={item.id}
-          item={item}
-          large
-          onUnavailable={onUnavailable}
-        />
+        {item.mediaType === "video" && item.videoUrl ? (
+          <video
+            key={item.videoUrl}
+            className="archive-video"
+            controls
+            playsInline
+            preload="metadata"
+            poster={item.verifiedPreviewUrl || item.thumbnailUrl}
+            src={item.videoUrl}
+            aria-label={`Play ${item.title}`}
+            onError={() => {
+              onUnavailable(item);
+              notify(
+                "This video is no longer available and has been removed from this view.",
+              );
+            }}
+          />
+        ) : (
+          <ArchiveImage
+            key={item.id}
+            item={item}
+            large
+            onUnavailable={onUnavailable}
+          />
+        )}
         <span className="detail-caption">
           {item.title} · {item.dateDisplay}
         </span>
@@ -103,7 +123,7 @@ export function Detail({
         <div className="detail-actions">
           <button className="primary" onClick={() => setDownloads(!downloads)}>
             <Download size={15} />
-            Image files
+            {item.mediaType === "video" ? "Video files" : "Image files"}
           </button>
           <button className="outline" onClick={onSave}>
             <Bookmark size={15} />
@@ -155,7 +175,7 @@ export function Detail({
             ["Medium", item.medium],
             ["Object size", item.physicalDimensions],
             [
-              "Image pixels",
+              item.mediaType === "video" ? "Poster pixels" : "Image pixels",
               item.width && item.height
                 ? `${item.width.toLocaleString()} × ${item.height.toLocaleString()}`
                 : "Not supplied",

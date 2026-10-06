@@ -46,6 +46,7 @@ const prompts = [
   "Department Stores",
   "Roadside America",
   "Vintage Packaging",
+  "Tulsa advertising",
 ];
 const editorialPalettes = [
   {
@@ -158,6 +159,7 @@ export function Scout() {
   }
   const sourceKey = query.providers.join(",");
   const textKey = query.textQuery;
+  const mediaKey = query.mediaType;
   const from = query.yearStart;
   const to = query.yearEnd;
   const isHome = view === "home";
@@ -227,6 +229,7 @@ export function Scout() {
     isHome,
     view === "collections",
     textKey,
+    mediaKey,
     sourceKey,
     from,
     to,
@@ -541,8 +544,30 @@ export function Scout() {
               </form>
               <div className="discovery-prompts">
                 <span className="eyebrow">Start somewhere</span>
+                <button
+                  onClick={() =>
+                    search("advertising", {
+                      mediaType: "video",
+                      providers: ["internetarchive"],
+                      yearStart: 1960,
+                      yearEnd: 1969,
+                    })
+                  }
+                >
+                  1960s TV &amp; film <ArrowUpRight size={12} />
+                </button>
                 {prompts.map((p) => (
-                  <button key={p} onClick={() => search(p)}>
+                  <button
+                    key={p}
+                    onClick={() =>
+                      search(
+                        p === "Tulsa advertising" ? "advertising" : p,
+                        p === "Tulsa advertising"
+                          ? { providers: ["tulsa"] }
+                          : {},
+                      )
+                    }
+                  >
                     {p}
                     <ArrowUpRight size={12} />
                   </button>
@@ -722,8 +747,13 @@ export function Scout() {
                 </div>
                 <div className="results-controls">
                   <div className="results-count" aria-live="polite">
-                    <strong>{visible.length.toLocaleString()}</strong> images in
-                    view{" "}
+                    <strong>{visible.length.toLocaleString()}</strong>{" "}
+                    {query.mediaType === "video"
+                      ? "videos"
+                      : query.mediaType === "image"
+                        ? "images"
+                        : "results"}{" "}
+                    in view{" "}
                     <span>
                       ·{" "}
                       {checkingImages
@@ -733,7 +763,7 @@ export function Scout() {
                   </div>
                   <div className="sort-layout">
                     <label className="sr-only" htmlFor="sort">
-                      Sort images
+                      Sort results
                     </label>
                     <select
                       id="sort"
@@ -1125,7 +1155,7 @@ export function Scout() {
         >
           {filters}
           <button className="primary" onClick={() => setMobileFilters(false)}>
-            Show {visible.length} images <ArrowRight size={16} />
+            Show {visible.length} results <ArrowRight size={16} />
           </button>
         </Dialog>
       )}
@@ -1262,7 +1292,7 @@ export function Scout() {
           <p>
             Archive Scout brings public archive records into one visual research
             space. Images and descriptions remain connected to their original
-            institutions.
+            institutions. Video results include playback and archive file links.
           </p>
           <p>
             Public domain and CC0 labels are based on explicit source metadata.
@@ -1283,9 +1313,11 @@ export function Scout() {
             ))}
           </div>
           <p className="small-note">
-            DPLA and Smithsonian require server API keys. Collections and
-            palettes are stored only in this browser. Related searches use
-            metadata and colors; no image embedding service is configured.
+            Tulsa Library, Oklahoma Digital Prairie, Internet Archive, and NASA
+            need no API keys. DPLA and Smithsonian require server API keys.
+            Collections and palettes are stored only in this browser. Related
+            searches use metadata and colors; no image embedding service is
+            configured.
           </p>
         </Dialog>
       )}

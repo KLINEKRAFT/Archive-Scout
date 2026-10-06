@@ -1,6 +1,7 @@
 import { PROVIDERS, type SearchQuery, type ProviderId } from "./types";
 export const defaultQuery: SearchQuery = {
   textQuery: "",
+  mediaType: "all",
   types: [],
   rights: [],
   providers: PROVIDERS.map((p) => p.id),
@@ -22,6 +23,12 @@ export function parseQuery(p: URLSearchParams): SearchQuery {
     textQuery: (p.get("q") ?? "").slice(0, 200),
     yearStart: number("from"),
     yearEnd: number("to"),
+    mediaType:
+      p.get("media") === "video"
+        ? "video"
+        : p.get("media") === "image"
+          ? "image"
+          : "all",
     types: p.getAll("type"),
     rights: p.getAll("rights"),
     providers: p.has("sources")
@@ -47,12 +54,14 @@ export function parseQuery(p: URLSearchParams): SearchQuery {
 }
 export function serializeQuery(q: SearchQuery): string {
   const p = new URLSearchParams();
+  if (q.mediaType !== "all") p.set("media", q.mediaType);
   if (q.textQuery) p.set("q", q.textQuery);
   if (q.yearStart !== undefined) p.set("from", String(q.yearStart));
   if (q.yearEnd !== undefined) p.set("to", String(q.yearEnd));
   q.types.forEach((t) => p.append("type", t));
   q.rights.forEach((r) => p.append("rights", r));
-  if (q.providers.length !== 7) p.set("sources", q.providers.join(","));
+  if (q.providers.length !== PROVIDERS.length)
+    p.set("sources", q.providers.join(","));
   q.selectedColors.forEach((c) => p.append("color", c.slice(1)));
   if (q.orientation !== "any") p.set("orientation", q.orientation);
   if (q.minimumSize) p.set("size", String(q.minimumSize));

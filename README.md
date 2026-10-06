@@ -12,7 +12,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open http://127.0.0.1:3000. Five providers work without credentials. Add `DPLA_API_KEY` and `SMITHSONIAN_API_KEY` to `.env.local` to enable those two sources. Keys are used only in server route handlers and never returned to the browser. Restart the server after changing keys.
+Open http://127.0.0.1:3000. Nine providers work without credentials. Add `DPLA_API_KEY` and `SMITHSONIAN_API_KEY` to `.env.local` to enable those two sources. Keys are used only in server route handlers and never returned to the browser. Restart the server after changing keys.
 
 ```sh
 npm test
@@ -26,8 +26,9 @@ npm start
 ## V1 experience
 
 - Editorial discovery page, predefined subject/era searches, and palette entry points.
-- Seven interchangeable adapters. Searches run concurrently in the browser against server endpoints and merge as each source responds. New searches cancel superseded requests.
-- Shareable URL state for era, sources, material, rights, orientation, verified image size, palette, matching strength, and sort.
+- Eleven interchangeable adapters. Searches run concurrently in the browser against server endpoints and merge as each source responds. New searches cancel superseded requests.
+- Shareable URL state for media type, era, sources, material, rights, orientation, verified image size, palette, matching strength, and sort.
+- Image/video/all discovery, video badges, native controls, playable-file links, and browser metadata checks before video admission. No autoplay.
 - Masonry and uniform image grids, native lazy loading, detail dialog, keyboard `/`, Escape, and previous/next arrows.
 - Source-linked file choices with archive-supplied dimensions and sizes. Original files go directly to their institutions without re-encoding. A bounded preview fallback handles failed browser embeds.
 - Rights evidence, original record links, citation copy, and conservative unknown/restricted classifications.
@@ -68,6 +69,21 @@ Providers preserve their original API payload on `originalMetadata`. Saved board
 | The Met                  | Paginated `/v1.1/search`, bounded object fetches                       | Explicit `isPublicDomain`                                                  |
 
 API documentation: [LOC](https://www.loc.gov/apis/json-and-yaml/), [DPLA](https://pro.dp.la/developers), [Smithsonian](https://www.si.edu/openaccess/devtools), [MediaWiki](https://www.mediawiki.org/wiki/API:Imageinfo), [AIC](https://api.artic.edu/docs/), [CMA](https://openaccess-api.clevelandart.org/), [Met](https://metmuseum.github.io/).
+
+## Expanded archives
+
+| Source                       | Coverage                                                                                                      | Access                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Tulsa City-County Library    | Beryl Ford advertising slides and photographs, Austin Hellwig, postcards, maps, oil industry, library history | Public CONTENTdm API + IIIF; no key          |
+| Oklahoma Digital Prairie     | Images of Oklahoma and Oklahoma Postcards; first image of multi-page items                                    | Public CONTENTdm API + IIIF; no key          |
+| Internet Archive             | Still images and moving images, including Prelinger films and advertising                                     | Advanced Search + item metadata; no key      |
+| NASA Image and Video Library | Mission photography, space-age assets, archival footage                                                       | Image/video search + asset manifests; no key |
+
+Regional searches distribute a page across the configured collections so a large text collection cannot crowd out photographs. Missing dates remain unknown and do not pass explicit era filters. NASA dates are the library's catalog dates, which may describe digitization rather than original filming. Internet Archive rights come from contributor-supplied item metadata, not a blanket license for the repository. Compound objects preview their first image and link to the complete original record.
+
+Docs: [CONTENTdm APIs](https://help.oclc.org/Metadata_Services/CONTENTdm_classic_version/Advanced_website_customization/API_Reference), [NASA API](https://images.nasa.gov/docs/images.nasa.gov_api_docs.pdf), [Internet Archive](https://archive.org/developers/). Further source research is in `docs/ARCHIVE-SOURCES.md`.
+
+`node --import tsx tests/live-expansion.ts` smoke-tests the four added adapters. Video playback goes directly to the archive; only metadata is preloaded for validation. Color analysis uses the poster image, not frames from the video.
 
 ## Practical limits and deployment
 

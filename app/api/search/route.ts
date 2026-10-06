@@ -12,7 +12,22 @@ export async function GET(request: NextRequest) {
   if (!Object.hasOwn(providers, id))
     return NextResponse.json({ error: "Unknown archive" }, { status: 400 });
   const q = parseQuery(p);
-  const key = JSON.stringify([id, q.textQuery, q.yearStart, q.yearEnd, q.page]);
+  if (q.mediaType === "video" && !["nasa", "internetarchive"].includes(id))
+    return NextResponse.json({
+      provider: id,
+      items: [],
+      total: 0,
+      hasMore: false,
+      status: "ok",
+    } satisfies ProviderResult);
+  const key = JSON.stringify([
+    id,
+    q.textQuery,
+    q.yearStart,
+    q.yearEnd,
+    q.page,
+    q.mediaType,
+  ]);
   const hit = cache.get(key);
   if (hit) return NextResponse.json(hit);
   try {

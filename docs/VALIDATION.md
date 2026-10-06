@@ -25,3 +25,14 @@ No public deployment, embedding backend, account synchronization, or full-corpus
 - Local production build, real Christmas search: 43 visible records, zero failed image elements, no unavailable-preview cards. Local provider access differs from Vercel and does not have the two optional keys.
 - Controlled browser fixture: three source records (working thumbnail/broken large image; broken thumbnail/working alternate; both broken) yield exactly two visible cards. Opening the first retains a loaded thumbnail despite its broken large image.
 - 16 unit tests and production build (including TypeScript) pass.
+
+## Regional archives and video — 2026-10-06
+
+- Confirmed PR #2 is deployed on the stable production alias. Live `1960s Advertising` search: 24 viewable results, zero failed image elements, no unavailable-preview cards. The original user-supplied deployment URL refers to the earlier build.
+- Added Tulsa City-County Library, Oklahoma Digital Prairie, NASA, and Internet Archive. Direct API smoke tests include image/video/date-filtered searches and regional compound-object manifests. These four sources need no new keys.
+- Balanced CONTENTdm pages across selected visual collections to prevent a large text collection from crowding out photographs. Known dates are preserved; unknown dates remain unknown.
+- Local browser: Tulsa query yielded six viewable cards; Oklahoma/Tulsa query yielded 23 with loaded previews; NASA/Apollo/video yielded 12 browser-validated video records. No failed image elements in the inspected regional grid.
+- Internet Archive advertising/1960–1969 yielded 12 playable video cards. Opened “Thrill dishwashing soap vintage ad 1963”; native playback progressed through the entire 60.09-second clip with no playback error. Verified video-file actions and rights metadata in the detail dialog.
+- Internet Archive also produced an intermittent upstream 502 and timeout during repeated live API tests. Those failures use the existing source-unavailable/retry UI without affecting other providers.
+- Verified the new homepage Tulsa shortcut, the eleven-source count, and no horizontal overflow at the default desktop viewport.
+- 22 deterministic tests and final production build/TypeScript pass. The browser checks use live archive data, not fixtures. Video verification preloads metadata only; full playback begins on user interaction.

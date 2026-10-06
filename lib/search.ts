@@ -16,6 +16,8 @@ export function filterAndRank(
 ): ArchiveItem[] {
   const filtered = deduplicate(items).filter((i) => {
     if (!q.providers.includes(i.provider)) return false;
+    if (q.mediaType !== "all" && (i.mediaType || "image") !== q.mediaType)
+      return false;
     if (
       q.yearStart !== undefined &&
       (i.yearEnd ?? i.yearStart ?? -Infinity) < q.yearStart
