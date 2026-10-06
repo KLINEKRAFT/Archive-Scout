@@ -56,6 +56,7 @@ export interface ArchiveItem extends Rights {
   subjects: string[];
   tags: string[];
   thumbnailUrl: string;
+  verifiedPreviewUrl?: string;
   previewUrl: string;
   fullImageUrl?: string;
   width?: number;

@@ -1,37 +1,60 @@
 "use client";
 import Image from "next/image";
+import { loadImage } from "./use-previews";
 import { Bookmark, ArrowUpRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { firstWorkingPreview, previewCandidates } from "@/lib/preview";
 import { PROVIDERS, type ArchiveItem } from "@/lib/types";
 export function ArchiveImage({
   item,
   large = false,
   priority = false,
+  onUnavailable,
 }: {
   item: ArchiveItem;
   large?: boolean;
   priority?: boolean;
+  onUnavailable?: (item: ArchiveItem) => void;
 }) {
-  const [broken, setBroken] = useState(false);
-  const [fallback, setFallback] = useState(false);
-  const url = large ? item.previewUrl : item.thumbnailUrl;
-  return broken ? (
-    <div className="image-unavailable">
-      <span>Preview unavailable</span>
-      <small>Open the record for the archive image ↗</small>
-    </div>
-  ) : (
+  const [resolved, setResolved] = useState<{ key: string; url: string } | null>(
+    null,
+  );
+  const key = JSON.stringify([
+    item.id,
+    item.previewUrl,
+    item.verifiedPreviewUrl,
+  ]);
+  const url = resolved?.key === key ? resolved.url : item.verifiedPreviewUrl;
+  useEffect(() => {
+    if (!large) return;
+    let alive = true;
+    void firstWorkingPreview(previewCandidates(item, true), loadImage).then(
+      (next) => {
+        if (alive && next) setResolved({ key, url: next });
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, [key, large]);
+  if (!url) return null;
+  return (
     <Image
-      src={fallback ? `/api/image?url=${encodeURIComponent(url)}` : url}
+      src={url}
       alt={item.title}
       width={item.width || 600}
       height={item.height || 750}
       unoptimized
       loading={priority ? "eager" : "lazy"}
-      onError={() => (fallback ? setBroken(true) : setFallback(true))}
+      onError={() => {
+        if (large && url !== item.verifiedPreviewUrl && item.verifiedPreviewUrl)
+          setResolved({ key, url: item.verifiedPreviewUrl });
+        else onUnavailable?.(item);
+      }}
     />
   );
 }
+
 export function ItemGrid({
   items,
   layout,
@@ -39,6 +62,7 @@ export function ItemGrid({
   onSave,
   saved,
   showColors = false,
+  onUnavailable,
 }: {
   items: ArchiveItem[];
   layout: "masonry" | "uniform";
@@ -46,6 +70,7 @@ export function ItemGrid({
   onSave: (i: ArchiveItem) => void;
   saved: Set<string>;
   showColors?: boolean;
+  onUnavailable: (item: ArchiveItem) => void;
 }) {
   return (
     <div className={`image-grid ${layout}`}>
@@ -57,7 +82,11 @@ export function ItemGrid({
               aria-label={`View ${item.title}`}
               onClick={() => onOpen(item)}
             >
-              <ArchiveImage item={item} priority={index < 4} />
+              <ArchiveImage
+                item={item}
+                priority={index < 4}
+                onUnavailable={onUnavailable}
+              />
             </button>
             <button
               className={`save-image ${saved.has(item.id) ? "is-saved" : ""}`}

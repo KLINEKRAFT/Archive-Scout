@@ -593,23 +593,6 @@ a svg {
   height: 100%;
   object-fit: contain;
 }
-.image-unavailable {
-  height: 240px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--soft);
-  font-size: 12px;
-  line-height: 1.5;
-  text-align: center;
-  color: var(--muted);
-  padding: 20px;
-}
-.image-unavailable small {
-  font-size: 10px;
-}
 .home-caption {
   display: flex;
   justify-content: space-between;
