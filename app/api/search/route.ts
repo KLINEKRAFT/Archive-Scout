@@ -38,7 +38,14 @@ export async function GET(request: NextRequest) {
     } satisfies ProviderResult);
   if (
     q.mediaType === "video" &&
-    !["loc", "nasa", "internetarchive", "europeana", "digitalnz"].includes(id)
+    ![
+      "loc",
+      "nasa",
+      "internetarchive",
+      "europeana",
+      "digitalnz",
+      "movingimagearchive",
+    ].includes(id)
   )
     return NextResponse.json({
       provider: id,

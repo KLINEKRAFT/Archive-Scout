@@ -36,3 +36,11 @@ Searches automatically fetch the next page near the bottom of the result grid, o
 ## NFSA Holden collection
 
 The home collection grid includes a clearly labeled **Watch on NFSA** link to [Holden car ads, 1955–1976](https://www.nfsa.gov.au/collection/curated/general-motors-holden). It opens the official collection in a new tab. This is an external viewing collection, not an API provider or an assertion of in-app playback. No NFSA thumbnails or streams are ingested. No supported public embed/API was verified, and [NFSA's current terms](https://www.nfsa.gov.au/footer/web-terms-of-use) require permission for automated ingestion. Revisit direct integration when a supported access path is available.
+
+## The Moving Image Archive
+
+Integrated https://www.movingimagearchive.com/ as a searchable video source and home-page collection. Its own public client uses GET `/api/clips` (100 clips/page) and POST `/api/search` (24 clips/page), with offset, yearMin/yearMax, color and aspectRatio. No key is required. This is a public website interface, not a documented/versioned third-party API; failures surface as a source availability error.
+
+Archive Scout sends the 1980 cutoff upstream and independently rejects undated/newer clips. It browses lazily through the catalog, uses the archive-hosted MP4s and posters, and validates playback before displaying results. Exact clip IDs, source-page clip parameters, and video URLs distinguish separate shots from the same film while deduplicating repeated clips. This does not establish that differently encoded copies across unrelated archives are identical.
+
+Source film pages preserve provenance links; collection-wide public-domain language is not promoted to verified item-level clearance. Saved records can recover clip data from the source page’s public serialized metadata if the in-memory cache has expired. No media library is bulk-downloaded or rehosted. The archive has post-1980 material, which is intentionally excluded.
