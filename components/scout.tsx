@@ -793,6 +793,40 @@ export function Scout() {
                     Filters
                   </button>
                 </div>
+                <div className="search-activity" data-active={checkingImages}>
+                  <div
+                    className="search-activity-label"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {checkingImages && (
+                      <>
+                        <span
+                          className="search-activity-spinner"
+                          aria-hidden="true"
+                        />
+                        <span>
+                          {loading
+                            ? page > 1
+                              ? "Finding more images…"
+                              : "Searching the archives…"
+                            : "Checking image previews…"}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  {checkingImages && (
+                    <span className="search-activity-count" aria-hidden="true">
+                      {visible.length
+                        ? `${visible.length.toLocaleString()} ready`
+                        : "Discoveries on their way"}
+                    </span>
+                  )}
+                  <span className="search-activity-track" aria-hidden="true">
+                    <span />
+                  </span>
+                </div>
                 <div className="results-controls">
                   <div className="results-count" aria-live="polite">
                     <strong>{visible.length.toLocaleString()}</strong>{" "}
